@@ -1,0 +1,72 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load l10n %}
+{% load humanize %}
+
+
+{% block content %}
+    <!-- Single Page Header start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Sản phẩm</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product:shop' %}">Sản phẩm</a></li>
+            <li class="breadcrumb-item active text-white">{{ breadcrumb_title }}</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+    <div class="container mt-5">
+        <h4>Kết quả tìm kiếm cho: <strong>{{ query }}</strong></h4>
+
+        {% if products %}
+            <div class="row mt-4">
+                {% for product in products %}
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="fruite-item card border border-warning rounded overflow-hidden position-relative h-100">
+                            <div class="fruite-img">
+                                <a href="{% url 'product:shop_detail' product.uuid %}">
+                                    <img src="{{ product.get_thumbnail }}" class="img-fluid w-100 rounded-top"
+                                         alt="{{ product.product_name }}"
+                                         style="height: 250px; object-fit: cover;">
+                                </a>
+                            </div>
+
+                            <div class="text-white bg-secondary px-3 py-1 rounded position-absolute"
+                                 style="top: 10px; left: 10px;">
+                                {{ product.get_categories }}
+                            </div>
+
+                            <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                                <h6 class="fw-semibold mb-3 text-dark product-name text-center"
+                                    title="{{ product.product_name }}">
+                                    {{ product.product_name }}
+                                </h6>
+
+                                <div class="price-area text-center mb-3">
+                        <span class="text-success fw-bold me-2">
+                            {{ product.sale_price|default:product.price|intcomma }}₫
+                        </span>
+                                    {% if product.sale_price %}
+                                        <del class="text-muted small">
+                                            {{ product.price|intcomma }}₫
+                                        </del>
+                                    {% endif %}
+                                </div>
+
+                                <div class="d-flex flex-column align-items-center gap-2 mt-auto">
+                                    <a href="{% url 'product:shop_detail' product.uuid %}"
+                                       class="btn border border-secondary rounded-pill px-3 text-primary">
+                                        <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Không tìm thấy sản phẩm nào phù hợp.</p>
+        {% endif %}
+    </div>
+{% endblock %}

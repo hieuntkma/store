@@ -1,0 +1,481 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %} {% load l10n %} {% load i18n %} {% load humanize %}
+
+{% block content %}
+    <style>
+        .price-area {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            color: #2e7d32; /* xanh đậm */
+        }
+    </style>
+
+    <!-- Single Page Header start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Chi tiết sản phẩm</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="#">Chi tiết sản phẩm</a></li>
+            <li class="breadcrumb-item active text-white">{{ product.product_name }}</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+
+
+    <!-- Single Product Start -->
+    <div class="container-fluid py-5 mt-5">
+        <div class="container py-5">
+            <div class="row g-4 mb-5">
+                <div class="col">
+                    <div class="row g-4" id="product-detail">
+                        <div class="col-lg-6 d-flex justify-content-center align-items-center">
+                            <div class="d-flex flex-column align-items-center">
+                                <!-- Carousel chính -->
+                                <div id="productCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
+                                    <div class="carousel-inner rounded"
+                                         style="width: 400px; height: 400px; overflow: hidden;">
+                                        {% for image in product.images %}
+                                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                                <img src="{{ image.image.url }}" class="d-block w-100 h-100"
+                                                     style="object-fit: cover;" alt="Ảnh sản phẩm">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Thumbnail slider dưới ảnh -->
+                                <div class="d-flex justify-content-center gap-2">
+                                    {% for image in product.images %}
+                                        <img src="{{ image.image.url }}"
+                                             data-bs-target="#productCarousel"
+                                             data-bs-slide-to="{{ forloop.counter0 }}"
+                                             class="rounded border"
+                                             style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; {% if forloop.first %}border: 2px solid #88c249;{% endif %}"
+                                             alt="thumb">
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <h4 class="fw-bold mb-3">{{ product.product_name }}</h4>
+                            <div class="d-flex mb-4">
+                                <i class="fa fa-star text-secondary"></i>
+                                <i class="fa fa-star text-secondary"></i>
+                                <i class="fa fa-star text-secondary"></i>
+                                <i class="fa fa-star text-secondary"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                            <p class="mb-3">Loại sản phẩm: <span
+                                    class="text-success fw-semibold">{{ product.categories }}</span></p>
+                            <p class="mb-3">
+                                Tình trạng:
+                                {% if product.stock_quantity >= 1 %}
+                                    <span class="text-success fw-semibold">Còn hàng</span>
+                                {% else %}
+                                    <span class="text-danger fw-semibold">Hết hàng</span>
+                                {% endif %}
+                            </p>
+                            <h5 class="fw-bold mb-3 price-area">{{ product.sale_price|intcomma }} ₫</h5>
+                            <del class="text-muted small mb-3">
+                                {{ product.price|intcomma }} ₫
+                            </del>
+{#                            <p class="mb-4">{{ product.desc }}</p>#}
+                            <!-- Bộ chọn số lượng sử dụng .border-secondary -->
+                            <div class="quantity-selector d-flex align-items-center mb-4 mt-3" style="gap: 10px;">
+                                <button type="button" class="btn border border-secondary rounded-circle"
+                                        id="decreaseBtn">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+
+                                <input type="text" id="quantityInput" value="1"
+                                       class="form-control text-center"
+                                       style="width: 50px; border-radius: 12px; border: 1px solid #ccc;">
+
+                                <button type="button" class="btn border border-secondary rounded-circle"
+                                        id="increaseBtn">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
+                            <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                <i class="fas fa-shopping-basket me-2 text-success"></i> Thêm vào giỏ hàng
+                            </a>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <nav>
+                                <div class="nav nav-tabs mb-3">
+                                    <button class="nav-link active border-white border-bottom-0" type="button"
+                                            role="tab"
+                                            id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about"
+                                            aria-controls="nav-about" aria-selected="true">Mô tả
+                                    </button>
+                                    <button class="nav-link border-white border-bottom-0" type="button" role="tab"
+                                            id="nav-mission-tab" data-bs-toggle="tab" data-bs-target="#nav-mission"
+                                            aria-controls="nav-mission" aria-selected="false">Đánh giá
+                                    </button>
+                                </div>
+                            </nav>
+                            <div class="tab-content mb-5">
+                                <div class="tab-pane active" id="nav-about" role="tabpanel"
+                                     aria-labelledby="nav-about-tab">
+{#                                    <p class="mb-3">#}
+{#                                        {% if product.desc %}#}
+{#                                            <span class="text-area fw-semibold">{{ product.desc }}</span>#}
+{#                                            <span class="text-area fw-semibold">{{ product.desc }}</span>#}
+{#                                        {% else %}#}
+{#                                            <span class="text-area fw-semibold">Không có mô tả</span>#}
+{#                                        {% endif %}#}
+{#                                    </p>#}
+
+                                        {% if product.desc %}
+
+                                            {{ product.desc|safe }}
+                                        {% else %}
+                                            <span class="text-area fw-semibold">Không có mô tả</span>
+                                        {% endif %}
+
+                                </div>
+                                <div class="tab-pane" id="nav-mission" role="tabpanel"
+                                     aria-labelledby="nav-mission-tab">
+                                    <div class="d-flex">
+                                        <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3"
+                                             style="width: 100px; height: 100px;" alt="">
+                                        <div class="">
+                                            <p class="mb-2" style="font-size: 14px;">April 12, 2024</p>
+                                            <div class="d-flex justify-content-between">
+                                                <h5>Jason Smith</h5>
+                                                <div class="d-flex mb-3">
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star"></i>
+                                                </div>
+                                            </div>
+                                            <p>The generated Lorem Ipsum is therefore always free from repetition
+                                                injected humour, or non-characteristic
+                                                words etc. Susp endisse ultricies nisi vel quam suscipit </p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3"
+                                             style="width: 100px; height: 100px;" alt="">
+                                        <div class="">
+                                            <p class="mb-2" style="font-size: 14px;">April 12, 2024</p>
+                                            <div class="d-flex justify-content-between">
+                                                <h5>Sam Peters</h5>
+                                                <div class="d-flex mb-3">
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star text-secondary"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                </div>
+                                            </div>
+                                            <p class="text-dark">The generated Lorem Ipsum is therefore always free from
+                                                repetition injected humour, or non-characteristic
+                                                words etc. Susp endisse ultricies nisi vel quam suscipit </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="nav-vision" role="tabpanel">
+                                    <p class="text-dark">Tempor erat elitr rebum at clita. Diam dolor diam ipsum et
+                                        tempor sit. Aliqu diam
+                                        amet diam et eos labore. 3</p>
+                                    <p class="mb-0">Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos
+                                        labore.
+                                        Clita erat ipsum et lorem et sit</p>
+                                </div>
+                            </div>
+                        </div>
+{#                        <form action="#">#}
+{#                            <h4 class="mb-5 fw-bold">Leave a Reply</h4>#}
+{#                            <div class="row g-4">#}
+{#                                <div class="col-lg-6">#}
+{#                                    <div class="border-bottom rounded">#}
+{#                                        <input type="text" class="form-control border-0 me-4" placeholder="Yur Name *">#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <div class="col-lg-6">#}
+{#                                    <div class="border-bottom rounded">#}
+{#                                        <input type="email" class="form-control border-0" placeholder="Your Email *">#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="border-bottom rounded my-4">#}
+{#                                        <textarea name="" id="" class="form-control border-0" cols="30" rows="8"#}
+{#                                                  placeholder="Your Review *" spellcheck="false"></textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex justify-content-between py-3 mb-5">#}
+{#                                        <div class="d-flex align-items-center">#}
+{#                                            <p class="mb-0 me-3">Please rate:</p>#}
+{#                                            <div class="d-flex align-items-center" style="font-size: 12px;">#}
+{#                                                <i class="fa fa-star text-muted"></i>#}
+{#                                                <i class="fa fa-star"></i>#}
+{#                                                <i class="fa fa-star"></i>#}
+{#                                                <i class="fa fa-star"></i>#}
+{#                                                <i class="fa fa-star"></i>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                        <a href="#"#}
+{#                                           class="btn border border-secondary text-primary rounded-pill px-4 py-3"> Post#}
+{#                                            Comment</a>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </form>#}
+                    </div>
+                </div>
+            </div>
+            <h1 class="fw-bold mb-0">Sản phẩm liên quan</h1>
+            <div class="vesitable">
+                <div class="owl-carousel related-carousel justify-content-center">
+{#                    {% for sp in related_products %}#}
+{#                        <div class="item">#}
+{##}
+{#                            <div class="border border-primary rounded position-relative vesitable-item">#}
+{#                                <!-- Ảnh -->#}
+{#                                <div class="vesitable-img">#}
+{#                                    <img src="{{ sp.get_thumbnail }}" class="img-fluid w-100 rounded-top"#}
+{#                                         alt="{{ sp.product_name }}">#}
+{#                                </div>#}
+{##}
+{#                                <!-- Danh mục -->#}
+{#                                <div class="text-white bg-primary px-3 py-1 rounded position-absolute"#}
+{#                                     style="top: 10px; left: 10px;">#}
+{#                                    {{ sp.get_categories }}#}
+{#                                </div>#}
+{##}
+{#                                <!-- Thông tin + hành động -->#}
+{#                                <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">#}
+{#                                    <!-- Tên sản phẩm -->#}
+{#                                    <h6 class="fw-semibold mb-3 text-dark text-center product-name"#}
+{#                                        title="{{ sp.product_name }}"#}
+{#                                        style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden; text-overflow: ellipsis;">#}
+{#                                        {{ sp.product_name }}#}
+{#                                    </h6>#}
+{##}
+{#                                    <!-- Giá -->#}
+{#                                    <div class="price-area text-center mb-3">#}
+{#                                <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">#}
+{#                                    {{ sp.sale_price|intcomma }}₫#}
+{#                                </span>#}
+{#                                        <del class="text-muted small" style="font-size: 0.9rem;">#}
+{#                                            {{ sp.price|intcomma }}₫#}
+{#                                        </del>#}
+{#                                    </div>#}
+{##}
+{#                                    <!-- Nút hành động -->#}
+{#                                    <div class="d-flex flex-column align-items-center gap-2 mt-auto">#}
+{#                                        <a href="{% url 'product:shop_detail' sp.uuid %}"#}
+{#                                           class="btn border border-secondary rounded-pill px-3 text-primary">#}
+{#                                            <i class="fas fa-search me-2 text-success"></i> Xem chi tiết#}
+{#                                        </a>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Single Product End -->
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+    {#    #### tăng giảm số lượng ####}
+    <script>
+        const input = document.getElementById('quantityInput');
+        const increaseBtn = document.getElementById('increaseBtn');
+        const decreaseBtn = document.getElementById('decreaseBtn');
+
+        increaseBtn.addEventListener('click', () => {
+            let current = parseInt(input.value) || 1;
+            if (current < 100) {
+                input.value = current + 1;
+            }
+        });
+
+        decreaseBtn.addEventListener('click', () => {
+            let current = parseInt(input.value) || 1;
+            if (current > 1) {
+                input.value = current - 1;
+            }
+        });
+
+        input.addEventListener('input', () => {
+            let val = parseInt(input.value);
+            if (isNaN(val) || val < 1) input.value = 1;
+            if (val > 100) input.value = 100;
+        });
+    </script>
+    {#    #### slide sản phẩm liên quan ####}
+{#    <script>#}
+{#        $(document).ready(function () {#}
+{#            $('.vegetable-carousel').owlCarousel({#}
+{#                loop: true,#}
+{#                margin: 20,#}
+{#                nav: true,#}
+{#                dots: false,#}
+{#                responsive: {#}
+{#                    0: {items: 1},#}
+{#                    576: {items: 2},#}
+{#                    768: {items: 3},#}
+{#                    992: {items: 4}#}
+{#                },#}
+{#                navText: [#}
+{#                    '<i class="fas fa-chevron-left text-primary fs-4 px-2"></i>',#}
+{#                    '<i class="fas fa-chevron-right text-primary fs-4 px-2"></i>'#}
+{#                ]#}
+{#            });#}
+{#        });#}
+{#    </script>#}
+    {#    ##### thêm giỏ hàng #### #}
+    <script>
+    document.querySelector(".btn.text-primary").addEventListener("click", function (e) {
+        e.preventDefault();
+
+        const quantity = parseInt(document.getElementById("quantityInput").value);
+        const productUUID = "{{ product.uuid }}";
+        const accountUUID = "{{ request.user.uuid }}";
+
+        fetch("{% url 'cart:create_cart_item_api_view' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({
+                account_uuid: accountUUID,
+                product_uuid: productUUID,
+                quantity: quantity
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                Swal.fire({
+                    title: 'Đã thêm vào giỏ hàng!',
+                    text: "Bạn muốn làm gì tiếp theo?",
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: 'Tới giỏ hàng',
+                    cancelButtonText: 'Tiếp tục mua',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{% url 'cart:cart_detail_view' %}";
+                    }
+                    else {
+                        window.location.href = "{% url 'product:shop' %}";
+                    }
+                    // Nếu cancel → không làm gì, tiếp tục mua
+                });
+            } else {
+                Swal.fire({
+                    title: '⚠️ Lỗi!',
+                    text: data.error || "Không thể thêm vào giỏ hàng.",
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: '🚫 Lỗi kết nối',
+                text: 'Vui lòng thử lại sau.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        });
+    });
+</script>
+{##### sản phẩm liên quan ####}
+    <script>
+        $(window).on('load', function () {
+            const container = $(".related-carousel");
+            const productUUID = "{{ product.uuid }}";  // truyền từ context Django
+
+            $.ajax({
+                url: `/product/api/related-products/${productUUID}/`,
+                method: "GET",
+                success: function (res) {
+                    if (!res.products || res.products.length === 0) return;
+
+                    container.html("");
+
+                    let html = "";
+                    res.products.forEach(product => {
+                        html += `
+                        <div class="item">
+                            <div class="border border-primary rounded position-relative vesitable-item">
+                                <div class="vesitable-img">
+                                    <a href="/product/shop-detail/${product.uuid}/">
+                                        <img src="${product.thumbnail}" class="img-fluid w-100 rounded-top" alt="${product.product_name}">
+                                    </a>
+                                </div>
+                                <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">
+                                    ${product.category}
+                                </div>
+                                <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                                    <h6 class="fw-semibold mb-3 text-dark text-center product-name"
+                                        title="${product.product_name}"
+                                        style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden;">
+                                        ${product.product_name}
+                                    </h6>
+                                    <div class="price-area text-center mb-3">
+                                        <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">
+                                            ${product.sale_price?.toLocaleString() || ''}₫
+                                        </span>
+                                        <del class="text-muted small" style="font-size: 0.9rem;">
+                                            ${product.price.toLocaleString()}₫
+                                        </del>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-center gap-2 mt-auto">
+                                        <a href="/product/shop-detail/${product.uuid}/"
+                                           class="btn border border-secondary rounded-pill px-3 text-primary">
+                                            <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    });
+
+                    container.html(html);
+
+                    container.owlCarousel({
+                        loop: true,
+                        margin: 16,
+                        nav: true,
+                        dots: false,
+                        autoplay: true,
+                        autoplayTimeout: 3000,
+                        autoplayHoverPause: true,
+                        navText: [
+                            '<i class="fas fa-chevron-left text-primary fs-4"></i>',
+                            '<i class="fas fa-chevron-right text-primary fs-4"></i>'
+                        ],
+                        responsive: {
+                            0: {items: 1},
+                            576: {items: 2},
+                            768: {items: 3},
+                            992: {items: 4}
+                        }
+                    });
+                },
+                error: function () {
+                    console.error("Không thể load sản phẩm liên quan.");
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

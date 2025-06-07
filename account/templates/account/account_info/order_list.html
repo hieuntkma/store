@@ -1,0 +1,319 @@
+{% extends 'account/account_info/base_account_info.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% load humanize %}
+
+
+{% block account_info_content %}
+    <style>
+        .pagination .page-item {
+            display: inline-block !important;
+        }
+    </style>
+    <h3 class="fw-bold">Đơn hàng của bạn</h3>
+
+    <table class="table table-bordered mt-4 text-center" id="order-table">
+        <thead style="background-color: #bdbdbd;">
+        <tr>
+            <th>Đơn hàng</th>
+            <th>Ngày đặt</th>
+            <th>Giá trị đơn hàng</th>
+            <th>Trạng thái thanh toán</th>
+            <th>Trạng thái giao hàng</th>
+        </tr>
+        </thead>
+        <tbody id="order-body">
+
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center" id="pagination">
+        </ul>
+    </nav>
+
+    <!-- Modal: Chi tiết đơn hàng -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailLabel">Chi tiết đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="order-detail-content">
+                        <p>Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+    {#    ##### Ajax get order list #####}
+    <script>
+        function loadOrders(page = 1) {
+            const tbody = document.getElementById('order-body');
+            const pagination = document.getElementById('pagination');
+
+            // Hiển thị loading
+            tbody.innerHTML = '<tr><td colspan="5">Đang tải...</td></tr>';
+            pagination.innerHTML = '';
+
+            // Tạo cờ kiểm tra timeout
+            let loaded = false;
+
+            // Nếu sau 5 giây vẫn chưa load → hiện thông báo
+            const fallbackTimeout = setTimeout(() => {
+                if (!loaded) {
+                    tbody.innerHTML = '<tr><td colspan="5">Không có đơn hàng nào.</td></tr>';
+                }
+            }, 5000);
+            const apiGetOrdersUrl = "{% url 'order:get_user_orders_api_view' %}";
+
+            // Gọi API
+            fetch(`${apiGetOrdersUrl}?page=${page}&page_size=5`)
+                .then(response => response.json())
+                .then(data => {
+
+                    loaded = true;  // đánh dấu đã load xong
+                    clearTimeout(fallbackTimeout);  // hủy timeout
+
+                    tbody.innerHTML = '';
+                    pagination.innerHTML = '';
+
+                    if (!data.orders.length) {
+                        tbody.innerHTML = '<tr><td colspan="5">Không có đơn hàng nào.</td></tr>';
+                        return;
+                    }
+                    //console.log(data)
+                    data.orders.forEach(order => {
+                        let paymentColor = order.payment_status === "Đã thanh toán" ? "bg-success" : "bg-danger";
+                        let statusColor = "";
+                        switch (order.delivery_status) {
+                            case "Chờ xử lý":
+                                statusColor = "bg-light text-dark";
+                                break;
+                            case "Đã xác nhận":
+                                statusColor = "bg-info";
+                                break;
+                            case "Đang giao hàng":
+                                statusColor = "bg-warning text-dark";
+                                break;
+                            case "Đã nhận hàng":
+                                statusColor = "bg-success";
+                                break;
+                            case "Đã hủy":
+                                statusColor = "bg-danger";
+                                break;
+                        }
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>
+                                    <a href="#" class="text-primary text-decoration-underline"
+                                        onclick="openOrderDetail('${order.uuid}');">
+                                        #${order.uuid.slice(0, 8)}
+                                    </a>
+                                </td>
+                                <td>${moment(order.created_at).locale('vi').fromNow()}</td>
+                                <td>${order.total_price.toLocaleString()}₫</td>
+                                <td>
+                                    <p><strong>Trạng thái:</strong> <span class="badge ${statusColor}">${order.delivery_status}</span></p>
+                                </td>
+                                <td>
+                                    <p><strong>Thanh toán:</strong> <span class="badge ${paymentColor}">${order.payment_status}</span></p>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    for (let i = 1; i <= data.total_pages; i++) {
+                        const active = (i === data.current_page) ? 'active' : '';
+                        pagination.innerHTML += `
+                    <li class="page-item ${active}">
+                        <a class="page-link" href="#" onclick="loadOrders(${i})">${i}</a>
+                    </li>
+                `;
+                    }
+                })
+                .catch(error => {
+                    loaded = true;
+                    clearTimeout(fallbackTimeout);
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-danger">Đã xảy ra lỗi khi tải đơn hàng.</td></tr>`;
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadOrders();  // tự động gọi khi trang vừa mở
+        });
+
+    </script>
+
+    #### Ajax get order detail #####
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Cookie có định dạng name=value
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function openOrderDetail(orderUuid) {
+            const content = document.getElementById('order-detail-content');
+            content.innerHTML = `<p>Đang tải chi tiết đơn hàng...</p>`;
+
+            const url = `/order/api/v1/get-orders-detail/${orderUuid}/`;
+
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const order = data.data;
+                    const items = order.items;
+                    let paymentColor = order.payment_status === "Đã thanh toán" ? "bg-success" : "bg-danger";
+                    let statusColor = "";
+                    switch (order.status) {
+                        case "Chờ xử lý":
+                            statusColor = "bg-light text-dark";
+                            break;
+                        case "Đã xác nhận":
+                            statusColor = "bg-info";
+                            break;
+                        case "Đang giao hàng":
+                            statusColor = "bg-warning text-dark";
+                            break;
+                        case "Đã nhận hàng":
+                            statusColor = "bg-success";
+                            break;
+                        case "Đã hủy":
+                            statusColor = "bg-danger";
+                            break;
+                    }
+                    let html = `
+                        <p><strong>Mã đơn:</strong> #${order.uuid.slice(0, 8)}</p>
+                        <p><strong>Trạng thái:</strong> <span class="badge ${statusColor}">${order.status}</span></p>
+                        <p><strong>Thanh toán:</strong> <span class="badge ${paymentColor}">${order.payment_status}</span></p>
+                        <p><strong>Ngày đặt:</strong> ${moment(order.created_at).locale('vi').subtract(10, 'days').calendar()}</p>
+
+                        <hr>
+                        <h6>📦 Thông tin nhận hàng:</h6>
+                        <ul class="list-group mb-3">
+                            <li class="list-group-item"><strong>Người nhận:</strong> ${order.recipient_name}</li>
+                            <li class="list-group-item"><strong>Địa chỉ:</strong> ${order.delivery_address}</li>
+                            <li class="list-group-item"><strong>Điện thoại:</strong> ${order.recipient_phone}</li>
+                            <li class="list-group-item"><strong>Email:</strong> ${order.recipient_email}</li>
+                            <li class="list-group-item"><strong>Ghi chú:</strong> ${order.note || 'Không có'}</li>
+                        </ul>
+
+                        <hr>
+                        <h6>🛒 Thông tin sản phẩm:</h6>
+                        <ul class="list-group">
+                    `;
+
+                    items.forEach(item => {
+                        html += `
+                            <li class="list-group-item d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <a href="/product/shop-detail/${item.product_uuid}"><img src="${item.thumbnail}" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;"></a>
+                                    <div>
+                                        <div><a href="/product/shop-detail/${item.product_uuid}">${item.product_name}</a></div>
+                                        <div class="text-muted small">${item.unit_price.toLocaleString()}₫ x ${item.quantity}</div>
+                                    </div>
+                                </div>
+                                <div class="text-end fw-bold">${item.total.toLocaleString()}₫</div>
+                            </li>
+                        `;
+                    });
+
+                    html += `</ul>
+                        <div class="text-end mt-3">
+                            <strong>Phí vận chuyển:</strong>
+                            <span class="text-dark fw-bold">${order.shipping_price.toLocaleString()}₫</span>
+                        </div>
+                        <div class="text-end">
+                            <strong>Tổng tiền thanh toán:</strong>
+                            <span class="text-danger fw-bold">${order.total_price.toLocaleString()}₫</span>
+                        </div>
+                    `;
+                    if (order.status === "Đã hủy") {
+                        html += `
+                            <div class="text-center mt-4">
+                                <span class="text-danger fw-bold">Đơn hàng đã bị hủy</span>
+                            </div>
+                        `;
+                    } else if (order.status === "Đã nhận hàng") {
+                        html += `
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <a href="/product/feedback/" class="btn btn-outline-success" id="feedback-btn">Đánh giá</a>
+                            </div>
+                            <div class="text-center mt-4">
+                                <span class="text-success fw-bold">Đơn hàng đã hoàn thành</span>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button class="btn btn-outline-danger" id="cancel-order-btn">Hủy đơn hàng</button>
+                            </div>
+                        `;
+                    }
+                    content.innerHTML = html;
+
+                    const modalEl = document.getElementById('orderDetailModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                    // Hủy đơn hàng
+                    const cancelBtn = document.getElementById("cancel-order-btn");
+                    if (cancelBtn) {
+                        cancelBtn.addEventListener("click", () => {
+                            Swal.fire({
+                                title: 'Bạn có chắc muốn hủy đơn hàng?',
+                                text: 'Sau khi hủy, đơn hàng sẽ không thể khôi phục!',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#d33',
+                                cancelButtonColor: '#3085d6',
+                                confirmButtonText: 'Hủy đơn',
+                                cancelButtonText: 'Không'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    fetch(`/order/api/v1/cancel/${order.uuid}/`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': getCookie("csrftoken")
+                                        }
+                                    }).then(res => res.json())
+                                        .then(() => {
+                                            Swal.fire("Đã hủy đơn!", "", "success");
+                                            modal.hide();
+                                        })
+                                        .catch(err => Swal.fire("Lỗi", "Không thể hủy đơn", "error"));
+                                }
+                            });
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi khi gọi API:", err);
+                    content.innerHTML = '<p class="text-danger">Không thể tải chi tiết đơn hàng.</p>';
+                });
+        }
+
+    </script>
+
+{% endblock %}

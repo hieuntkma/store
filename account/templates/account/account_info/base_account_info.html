@@ -1,0 +1,61 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% load humanize %}
+
+{% block content %}
+    <style>
+        .list-group-item.active-custom {
+            background-color: #a6a8a2;
+            color: #000;
+            font-weight: 500;
+            border-color: #a6a8a2;
+        }
+    </style>
+    <!-- Checkout Page Start -->
+    <div class="container-fluid py-5">
+        <!-- Single Page Header -->
+        <div class="container-fluid page-header py-5">
+            <h1 class="text-center text-white display-6">Tài khoản của tôi</h1>
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'account:my_profile_view' %}">Tài khoản</a></li>
+                <li class="breadcrumb-item active text-white">{{ breadcrumb_title }}</li>
+            </ol>
+        </div>
+        <!-- Single Page Header End -->
+
+        <div class="container mt-5 mb-5">
+            <div class="row">
+                <!-- Sidebar bên trái -->
+                <div class="col-md-3 mb-4">
+                    <div class="list-group">
+                        <a href="{% url 'account:my_profile_view' %}"
+                           class="list-group-item list-group-item-action active" aria-current="true">
+                            Tài khoản của tôi
+                        </a>
+                        <a href="{% url 'account:my_profile_view' %}"
+                           class="list-group-item list-group-item-action {% if current_menu == 'profile' %}active-custom{% endif %}">Thông
+                            tin cá nhân</a>
+                        <a href="{% url 'account:profile_setting_view' %}"
+                           class="list-group-item list-group-item-action {% if current_menu == 'setting' %}active-custom{% endif %}">Cài
+                            đặt hồ sơ</a>
+                        <a href="{% url 'account:change_password_view' %}"
+                           class="list-group-item list-group-item-action {% if current_menu == 'password' %}active-custom{% endif %}">Đổi
+                            mật khẩu</a>
+                        <a href="{% url 'account:order_list_view' %}"
+                           class="list-group-item list-group-item-action {% if current_menu == 'orders' %}active-custom{% endif %}">Đơn
+                            mua</a>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    {% block account_info_content %}
+
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
