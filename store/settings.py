@@ -125,7 +125,7 @@ NS_store_DB_USER = "postgres"
 if environ.get('NS_store_DB_USER') is not None:
     NS_store_DB_USER = environ.get('NS_store_DB_USER')
 
-NS_store_DB_PASSWORD = "123456"
+NS_store_DB_PASSWORD = "ledat1211"
 if environ.get('NS_store_DB_PASSWORD') is not None:
     NS_store_DB_PASSWORD = environ.get('NS_store_DB_PASSWORD')
 
