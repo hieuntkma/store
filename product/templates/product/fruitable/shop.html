@@ -1,0 +1,422 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %} {% load l10n %} {% load i18n %} {% load humanize %}
+
+{% block content %}
+    <style>
+        .product-card {
+            width: 100%;
+            max-width: 160px; /* hạn chế chiều rộng */
+            border: 1px solid #ffe9b3;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+            font-size: 0.8rem;
+            background: #fff;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 6px 12px rgba(255, 200, 0, 0.2);
+        }
+
+        .product-card .img-fluid {
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .category-badge {
+            background-color: #ffa500;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .product-card h5 {
+            font-size: 0.9rem;
+            margin: 0.4rem 0;
+        }
+
+        .product-card p {
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .btn-custom {
+            border: 1px solid #ffa500;
+            color: green;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+        }
+
+        .btn-custom i {
+            font-size: 0.85rem;
+        }
+
+        .fruite-item {
+            border: 1px solid #ffa500; /* hoặc border-secondary như cũ */
+            border-radius: 1rem;
+            overflow: hidden; /* QUAN TRỌNG: để ảnh không tràn ra khỏi phần bo góc */
+        }
+
+        .fruite-img img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+        }
+
+    </style>
+
+
+    <!-- Single Page Header start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Sản phẩm</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product:shop' %}">Sản phẩm</a></li>
+            <li class="breadcrumb-item active text-white">{{ breadcrumb_title }}</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+    <!-- Fruits Shop Start-->
+    <div class="container-fluid fruite py-5">
+        <div class="container py-5">
+            <div class="row g-4">
+                <div class="col-lg-12">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <h4 class="mb-0 fw-bold text-success">Tất cả sản phẩm</h4>
+
+                        <div class="dropdown ms-auto">
+                            <label class="me-2 text-muted small">Sắp xếp theo:</label>
+                            <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button"
+                                    id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                -- Chọn tiêu chí --
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                                <li><a class="dropdown-item sort-option" data-sort="newest" href="#">Hàng mới về</a>
+                                </li>
+                                <li><a class="dropdown-item sort-option" data-sort="oldest" href="#">Hàng cũ nhất</a>
+                                </li>
+                                <li><a class="dropdown-item sort-option" data-sort="price_asc" href="#">Giá tăng dần</a>
+                                </li>
+                                <li><a class="dropdown-item sort-option" data-sort="price_desc" href="#">Giá giảm
+                                    dần</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-3">
+                            <div class="border-end pe-4">
+                                <!-- Lọc giá -->
+                                <h5 class="fw-bold mb-3">Giá tiền</h5>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="price-filter" value="0-100000"
+                                           id="price1">
+                                    <label class="form-check-label" for="price1">Giá dưới 100.000đ</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="price-filter"
+                                           value="100000-200000" id="price2">
+                                    <label class="form-check-label" for="price2">100.000đ - 200.000đ</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="price-filter"
+                                           value="200000-300000" id="price2">
+                                    <label class="form-check-label" for="price3">200.000đ - 300.000đ</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="price-filter"
+                                           value="300000-500000" id="price2">
+                                    <label class="form-check-label" for="price4">300.000đ - 500.000đ</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="price-filter"
+                                           value="500000-1000000000" id="price2">
+                                    <label class="form-check-label" for="price5">> 500.000đ</label>
+                                </div>
+                                <!-- Các dòng khác giữ nguyên, chỉ cần thêm name="price-filter" -->
+
+                                <!-- Danh mục sản phẩm -->
+                                <h5 class="fw-bold mb-3">Danh mục sản phẩm</h5>
+                                {% for category in categories %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="category-filter"
+                                               value="{{ category.name }}" id="{{ category.uuid }}"
+                                               {% if selected_category == category.name %}checked{% endif %}>
+                                        <label class="form-check-label"
+                                               for="{{ category.uuid }}">{{ category.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-lg-9">
+                            <div class="row g-4 justify-content-center" id="product-list">
+                                {#                                ### hiển thị sản phẩm ở đây ####}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="pagination d-flex justify-content-center mt-5">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Fruits Shop End-->
+
+
+{% endblock %}
+{% block extra_scripts %}
+
+    {#####giả lập checkbox từ checkbox###}
+    <script>
+        $(document).ready(function () {
+            // Khi một checkbox trong nhóm "giá tiền" được chọn
+            $("input[type='checkbox'][id^='price']").on("change", function () {
+                if (this.checked) {
+                    // Bỏ chọn tất cả checkbox khác
+                    $("input[type='checkbox'][id^='price']").not(this).prop("checked", false);
+                }
+            });
+        });
+    </script>
+
+
+    {#    #### list product ####}
+{#    <script>#}
+{#        $(document).ready(function () {#}
+{#            function loadProducts(page = 1) {#}
+{#                $.ajax({#}
+{#                    url: "{% url 'product:product_list_api' %}?page=" + page,#}
+{#                    type: "GET",#}
+{#                    success: function (response) {#}
+{#                        const container = $("#product-list");#}
+{#                        container.empty();#}
+{##}
+{#                        const perRow = 3;#}
+{#                        const products = response.results;#}
+{##}
+{#                        for (let i = 0; i < products.length; i += perRow) {#}
+{#                            const row = $('<div class="row g-4 mb-4"></div>');#}
+{##}
+{#                            for (let j = i; j < i + perRow && j < products.length; j++) {#}
+{#                                const product = products[j];#}
+{#                                const card = `#}
+{#                            <div class="col-md-4">#}
+{#                                <div class="fruite-item card border border-warning rounded overflow-hidden">#}
+{#                                    <div class="fruite-img">#}
+{#                                        <img src="${product.thumbnail_url}" class="img-fluid w-100 rounded-top" alt="" style="height: 250px; object-fit: cover;">#}
+{#                                    </div>#}
+{#                                    <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">#}
+{#                                        ${product.categories}#}
+{#                                    </div>#}
+{#                                    <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">#}
+{#                                        <h6 class="fw-semibold mb-3 text-dark product-name text-center" title="${product.product_name}">#}
+{#                                            ${product.product_name}#}
+{#                                        </h6>#}
+{#                                        <div class="price-area text-center mb-3">#}
+{#                                            <span class="text-success fw-bold me-2">#}
+{#                                                ${product.sale_price.toLocaleString()}₫#}
+{#                                            </span>#}
+{#                                            <del class="text-muted small">#}
+{#                                                ${product.price.toLocaleString()}₫#}
+{#                                            </del>#}
+{#                                        </div>#}
+{#                                        <div class="d-flex flex-column align-items-center gap-2 mt-auto">#}
+{#                                            <a href="/product/shop-detail/${product.uuid}/" class="btn border border-secondary rounded-pill px-3 text-primary">#}
+{#                                                <i class="fas fa-search me-2 text-success"></i> Xem chi tiết#}
+{#                                            </a>#}
+{#                                            <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary">#}
+{#                                                <i class="fas fa-shopping-basket me-2 text-success"></i> Thêm vào giỏ hàng#}
+{#                                            </a>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>`;#}
+{#                                row.append(card);#}
+{#                            }#}
+{#                            container.append(row);#}
+{#                        }#}
+{##}
+{#                        // Tạo phân trang bên dưới#}
+{#                        renderPagination(response.current_page, response.total_pages);#}
+{#                    },#}
+{#                    error: function () {#}
+{#                        alert("Lỗi khi gọi API.");#}
+{#                    }#}
+{#                });#}
+{#            }#}
+{##}
+{#            function renderPagination(currentPage, totalPages) {#}
+{#                const paginationContainer = $(".pagination");#}
+{#                paginationContainer.empty();#}
+{##}
+{#                // << button#}
+{#                if (currentPage > 1) {#}
+{#                    paginationContainer.append(`<a href="#" class="rounded" data-page="${currentPage - 1}">&laquo;</a>`);#}
+{#                }#}
+{##}
+{#                for (let i = 1; i <= totalPages; i++) {#}
+{#                    const activeClass = i === currentPage ? "active" : "";#}
+{#                    paginationContainer.append(`<a href="#" class="rounded ${activeClass}" data-page="${i}">${i}</a>`);#}
+{#                }#}
+{##}
+{#                // >> button#}
+{#                if (currentPage < totalPages) {#}
+{#                    paginationContainer.append(`<a href="#" class="rounded" data-page="${currentPage + 1}">&raquo;</a>`);#}
+{#                }#}
+{##}
+{#                // Xử lý sự kiện khi click phân trang#}
+{#                $(".pagination a").on("click", function (e) {#}
+{#                    e.preventDefault();#}
+{#                    const page = $(this).data("page");#}
+{#                    if (page) {#}
+{#                        loadProducts(page);#}
+{#                    }#}
+{#                });#}
+{#            }#}
+{##}
+{#            // Load trang đầu tiên#}
+{#            loadProducts();#}
+{#        });#}
+{#    </script>#}
+
+    {#    #### lọc sản phẩm theo giá####}
+    <script>
+        $(document).ready(function () {
+
+            // Cho phép chỉ chọn 1 checkbox
+            $('input[name="price-filter"]').on('change', function () {
+                $('input[name="price-filter"]').not(this).prop('checked', false);
+                loadFilteredProducts(1);
+            });
+            $('input[name="category-filter"]').on('change', function () {
+                $('input[name="category-filter"]').not(this).prop('checked', false);
+                loadFilteredProducts(1);
+            });
+
+            $('.sort-option').on('click', function (e) {
+                e.preventDefault();
+                $('.sort-option').removeClass('active');      // Xóa trạng thái cũ
+                $(this).addClass('active');                   // Đánh dấu mới
+                $('#sortDropdown').text($(this).text());      // Hiển thị tên tiêu chí
+                loadFilteredProducts(1);                      // Tải lại sản phẩm
+            });
+            const defaultCategory = "{{ selected_category }}";
+            if (defaultCategory) {
+                $('input[name="category-filter"]').each(function () {
+                    if ($(this).val() === defaultCategory) {
+                        $(this).prop('checked', true);
+                    } else {
+                        $(this).prop('checked', false);
+                    }
+                });
+                loadFilteredProducts(1);
+            }
+
+            function loadFilteredProducts(page = 1) {
+                const selectedPrice = $('input[name="price-filter"]:checked').val() || '';
+                const selectedCategory = $('input[name="category-filter"]:checked').val() || '';
+                const selectedSort = $('.sort-option.active').data('sort') || 'newest';
+
+
+                $.ajax({
+                    url: "{% url 'product:filter_products_api' %}",
+                    type: "GET",
+                    data: {
+                        price_range: selectedPrice,
+                        category: selectedCategory,
+                        sort_by: selectedSort,
+
+                        page: page
+                    },
+                    success: function (response) {
+                        const container = $("#product-list");
+                        container.empty();
+
+                        const products = response.results;
+                        const perRow = 3;
+
+                        for (let i = 0; i < products.length; i += perRow) {
+                            const row = $('<div class="row g-4 mb-4"></div>');
+                            for (let j = i; j < i + perRow && j < products.length; j++) {
+                                const product = products[j];
+                                const card = `
+                                <div class="col-md-4">
+                                    <div class="fruite-item card border border-warning rounded overflow-hidden">
+                                        <div class="fruite-img">
+                                            <a href="/product/shop-detail/${product.uuid}">
+                                                <img src="${product.thumbnail_url}" class="img-fluid w-100 rounded-top" alt="" style="height: 250px; object-fit: cover;">
+                                            </a>
+                                        </div>
+                                        <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">
+                                            ${product.categories}
+                                        </div>
+                                        <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                                            <h6 class="fw-semibold mb-3 text-dark product-name text-center" title="${product.product_name}">
+                                                ${product.product_name}
+                                            </h6>
+                                            <div class="price-area text-center mb-3">
+                                                <span class="text-success fw-bold me-2">
+                                                    ${product.sale_price.toLocaleString()}₫
+                                                </span>
+                                                <del class="text-muted small">
+                                                    ${product.price.toLocaleString()}₫
+                                                </del>
+                                            </div>
+                                            <div class="d-flex flex-column align-items-center gap-2 mt-auto">
+                                                <a href="/product/shop-detail/${product.uuid}/" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                    <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                row.append(card);
+                            }
+                            container.append(row);
+                        }
+
+                        renderPagination(response.current_page, response.total_pages);
+                    },
+                    error: function () {
+                        alert("Lỗi khi gọi API lọc.");
+                    }
+                });
+            }
+
+            function renderPagination(currentPage, totalPages) {
+                const paginationContainer = $(".pagination");
+                paginationContainer.empty();
+
+                if (currentPage > 1) {
+                    paginationContainer.append(`<a href="#" class="rounded" data-page="${currentPage - 1}">&laquo;</a>`);
+                }
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const active = i === currentPage ? "active" : "";
+                    paginationContainer.append(`<a href="#" class="rounded ${active}" data-page="${i}">${i}</a>`);
+                }
+
+                if (currentPage < totalPages) {
+                    paginationContainer.append(`<a href="#" class="rounded" data-page="${currentPage + 1}">&raquo;</a>`);
+                }
+
+                $(".pagination a").on("click", function (e) {
+                    e.preventDefault();
+                    const page = $(this).data("page");
+                    if (page) {
+                        loadFilteredProducts(page);
+                    }
+                });
+            }
+
+            loadFilteredProducts();  // Gọi khi trang load lần đầu
+        });
+    </script>
+{% endblock %}

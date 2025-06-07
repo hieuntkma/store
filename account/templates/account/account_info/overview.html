@@ -1,0 +1,85 @@
+{% extends 'account/account_info/base_account_info.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% load humanize %}
+
+{% block account_info_content %}
+    <h3 class="fw-bold">Hồ Sơ Của Tôi</h3>
+    <hr>
+
+    <div class="row">
+        <!-- Thông tin bên trái -->
+        <div class="col-md-8">
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Họ và tên</label>
+                {% if fullname %}
+                    <div class="col-sm-8 pt-2">
+                        <strong>{{ profile.get_full_name }}</strong>
+                    </div>
+                {% else %}
+                    Chưa có
+                {% endif %}
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Tên đăng nhập</label>
+                <div class="col-sm-8 pt-2">
+                    <strong>{{ user.username }}</strong>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Giới tính</label>
+                <div class="col-sm-8 pt-2">
+                    {% if profile.gender == 'M' %}Nam
+                    {% elif profile.gender == 'F' %}Nữ
+                    {% elif profile.gender == 'O' %}Khác
+                    {% else %}Chưa xác định
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Ngày sinh</label>
+                <div class="col-sm-8 pt-2">
+                    {% if profile.birthday %}
+                        {{ profile.birthday|date:"d/m/Y" }}
+                    {% else %}
+                        Chưa có
+                    {% endif %}
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Email</label>
+                <div class="col-sm-8 pt-2">
+                    {{ user.email|default:"Chưa có" }}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Số điện thoại</label>
+                <div class="col-sm-8 pt-2">
+                    {{ user.telephone|default:"Chưa có" }}
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Địa chỉ</label>
+                <div class="col-sm-8 pt-2">
+                    {{ profile.address|default:"Chưa có" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ảnh đại diện bên phải -->
+        <div class="col-md-4 text-center">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
+            {% else %}
+                <img src="/media/default/default-avatar.jpg" class="rounded-circle mb-3"
+                     style="width: 100px; height: 100px;">
+            {% endif %}
+            <p class="text-muted" style="font-size: 0.9rem;">Ảnh đại diện</p>
+        </div>
+    </div>
+{% endblock %}
+

@@ -1,0 +1,65 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load l10n %}
+{% load humanize %}
+
+
+
+{% block content %}
+    <!-- Single Page Header -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Giới thiệu</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item active text-white">{{ breadcrumb_title }}</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+    <div class="container-fluid mb-3 hero-header"
+         style="transform: translateY(-80px); position: relative; z-index: 2;">
+        <div class="container py-5">
+            <div class="row">
+                <!-- Cột trái: thông tin + form -->
+                <div class="col-md-6">
+                    <!-- Thông tin liên hệ -->
+                    <div class="mb-4">
+                        <p><i class="fas fa-map-marker-alt me-2 text-success"></i> 141 Chiến Thắng, Tân Triều, Thanh
+                            Trì, Hà Nội</p>
+                        <p><i class="fas fa-phone me-2 text-success"></i> 1900 1560</p>
+                        <p><i class="fas fa-envelope me-2 text-success"></i> hieuntkma@gmail.com</p>
+                    </div>
+                    <hr>
+
+                    <!-- Form liên hệ -->
+                    <h5 class="fw-bold mb-3">Liên hệ với chúng tôi</h5>
+                    <form action="#" method="post">
+                        <div class="mb-3">
+                            <input type="text" class="form-control rounded-pill px-4" placeholder="Họ và tên"
+                                   name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control rounded-pill px-4" placeholder="Email" name="email"
+                                   required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control rounded-4 px-4 py-3" placeholder="Nội dung" rows="5"
+                                      name="message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn w-100 text-white rounded-pill"
+                                style="background: linear-gradient(to right, #91ad41, #f5966c);">Gửi liên hệ
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Cột phải: bản đồ Google -->
+                <div class="col-md-6 mt-4 mt-md-0">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.2949345376865!2d105.79365357503009!3d20.980811380656537!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135acc508f938fd%3A0x883e474806a2d1f2!2zSOG7jWMgdmnhu4duIEvhu7kgdGh14bqtdCBt4bqtdCBtw6M!5e0!3m2!1svi!2s!4v1748337951480!5m2!1svi!2s"
+                            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
