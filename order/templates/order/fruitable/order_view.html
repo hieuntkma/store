@@ -1,0 +1,115 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% load humanize %}
+
+{% block content %}
+    <style>
+        #order-detail-content table td {
+            vertical-align: middle;
+        }
+
+        #order-detail-content .table {
+            margin-bottom: 0;
+        }
+
+        #cart-table-body td,
+        #cart-table-body th {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #cart-table-body .summary-row td {
+            text-align: right !important;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+    </style>
+    <!-- Checkout Page Start -->
+    <div class="container-fluid py-5">
+        <!-- Single Page Header start -->
+        <div class="container-fluid page-header py-5">
+            <h1 class="text-center text-white display-6">Thanh Toán</h1>
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="#">Giỏ hàng</a></li>
+                <li class="breadcrumb-item active text-white">Thanh toán</li>
+            </ol>
+        </div>
+        <!-- Single Page Header End -->
+
+        <div class="container py-5">
+            <h1 class="mb-4">Thông tin nhận hàng</h1>
+            <form action="#">
+                <div class="row g-5">
+                    <div class="col-md-12 col-lg-6 col-xl-6">
+                        <div class="row">
+                            <div class="col-md-12 col-lg-6">
+                                <div class="form-item w-100">
+                                    <label class="form-label my-2">Tên<sup>*</sup></label>
+                                    <input type="text" class="form-control" name="first_name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-12 col-lg-6">
+                                <div class="form-item w-100">
+                                    <label class="form-label my-2">Họ đệm<sup>*</sup></label>
+                                    <input type="text" class="form-control" name="last_name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label my-2">Địa chỉ <sup>*</sup></label>
+                            <input type="text" class="form-control" name="delivery_address" required>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label my-2">Số điện thoại<sup>*</sup></label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label my-2">Email<sup>*</sup></label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <hr>
+                        <div class="form-item">
+                            <textarea name="text" class="form-control" spellcheck="false" cols="30" rows="11"
+                                      placeholder="Ghi chú cho nhân viên (Tùy chọn)"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-6 col-xl-6">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Sản phẩm</th>
+                                    <th scope="col">Tên</th>
+                                    <th scope="col">Giá</th>
+                                    <th scope="col">Số luợng</th>
+                                    <th scope="col">Tổng giá</th>
+                                </tr>
+                                </thead>
+                                <tbody id="cart-table-body">
+                                {#ajax load here#}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row g-4 text-center align-items-center justify-content-center pt-4">
+                            <button type="button" id="order-btn"
+                                    data-order-url="{% url 'order:create_order_api_view' %}"
+                                    class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Đặt hàng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Checkout Page End -->
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/order/fruitable/order.js?v={{ now|date:"U" }}"></script>
+    <script>
+
+    </script>
+{% endblock %}

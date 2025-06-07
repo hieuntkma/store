@@ -1,0 +1,117 @@
+{% extends 'account/account_info/base_account_info.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% load humanize %}
+
+{% block account_info_content %}
+    <h3 class="fw-bold">Cài Đặt Hồ Sơ</h3>
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+            <!-- Cột trái -->
+            <div class="col-md-8">
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Họ</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="first_name" class="form-control" value="{{ profile.first_name }}">
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Tên</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="last_name" class="form-control" value="{{ profile.last_name }}">
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Giới tính</label>
+                    <div class="col-sm-8">
+                        {% for val, label in profile.GENDER_CHOICES %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gender" value="{{ val }}"
+                                       {% if profile.gender == val %}checked{% endif %}>
+                                <label class="form-check-label">{{ label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Ngày sinh</label>
+                    <div class="col-sm-8 d-flex gap-2">
+                        <select name="birth_day" class="form-select">
+                            <option>Ngày</option>
+                            {% for d in range_day %}
+                                <option value="{{ d }}"
+                                        {% if profile.birthday and profile.birthday.day == d %}selected{% endif %}>{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="birth_month" class="form-select">
+                            <option>Tháng</option>
+                            {% for m in range_month %}
+                                <option value="{{ m }}"
+                                        {% if profile.birthday and profile.birthday.month == m %}selected{% endif %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="birth_year" class="form-select">
+                            <option>Năm</option>
+                            {% for y in range_year %}
+                                <option value="{{ y }}"
+                                        {% if profile.birthday and profile.birthday.year == y %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Email</label>
+                    <div class="col-sm-8">
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Số điện thoại</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="telephone" class="form-control" value="{{ user.telephone }}">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Địa chỉ</label>
+                    <div class="col-sm-8">
+                        <textarea name="address" class="form-control">{{ profile.address }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải -->
+            <div class="col-md-4 text-center">
+                <img id="avatar-preview"
+                     src="{{ profile.avatar.url }}"
+                     onerror="this.src='/media/default/default-avatar.jpg'"
+                     class="rounded-circle mb-3"
+                     style="width: 100px; height: 100px; object-fit: cover;">
+                <input type="file" name="avatar" id="avatar-input" class="form-control">
+                <p class="text-muted mt-2" style="font-size: 0.9rem;">Định dạng: .JPG, .PNG <br> Dung lượng tối đa 1MB
+                </p>
+            </div>
+        </div>
+
+        <div class="text-start mt-4">
+            <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+        </div>
+    </form>
+
+    <script>
+    document.getElementById('avatar-input').addEventListener('change', function (e) {
+        const preview = document.getElementById('avatar-preview');
+        const file = e.target.files[0];
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+        }
+    });
+</script>
+
+{% endblock %}

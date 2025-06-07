@@ -1,0 +1,78 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load l10n %}
+{% load humanize %}
+
+
+
+{% block content %}
+    <!-- Single Page Header -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Giới thiệu</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'portal:index' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item active text-white">{{ breadcrumb_title }}</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+    <div class="container-fluid mb-3 hero-header"
+         style="transform: translateY(-80px); position: relative; z-index: 2;">
+        <div class="container py-5">
+            <h1 class="mb-4 fw-bold">🥦 Giới thiệu về Cool Organic</h1>
+
+            <p>
+                <strong>Cool Organic</strong> là cửa hàng chuyên cung cấp các loại thực phẩm sạch, hữu cơ và an toàn cho
+                sức khỏe người tiêu dùng.
+                Với sứ mệnh <em>"Mang thiên nhiên về bữa ăn mỗi gia đình"</em>, chúng tôi cam kết mang đến những sản
+                phẩm có nguồn gốc rõ ràng,
+                không hóa chất, không chất bảo quản và thân thiện với môi trường.
+            </p>
+
+            <h3 class="mt-5">🌱 Giá trị kinh doanh của chúng tôi</h3>
+            <ul>
+                <li>Chất lượng là ưu tiên hàng đầu</li>
+                <li>Minh bạch nguồn gốc - nói không với thực phẩm bẩn</li>
+                <li>Cam kết vì sức khỏe cộng đồng</li>
+                <li>Giao hàng nhanh - giữ trọn độ tươi</li>
+            </ul>
+
+            <h3 class="mt-5">🏠 Thông tin cửa hàng</h3>
+            <ul>
+                <li><strong>Địa chỉ:</strong> 141 Chiến Thắng, Tân Triều, Thanh Trì, Hà Nội</li>
+                <li><strong>Hotline:</strong> 1900 1560</li>
+                <li><strong>Email:</strong> hieuntkma@gmail.com</li>
+                <li><strong>Giờ mở cửa:</strong> 08:00 - 20:00 (T2 - CN)</li>
+            </ul>
+
+            <h3 class="mt-5">💼 Kinh nghiệm & đội ngũ</h3>
+            <p>
+                Cool Organic bắt đầu hoạt động từ năm <strong>2019</strong>, được sáng lập bởi những người đam mê nông
+                nghiệp hữu cơ
+                và muốn lan tỏa thói quen ăn sạch - sống xanh. Đội ngũ của chúng tôi gồm các chuyên gia trong lĩnh vực
+                nông sản, dinh dưỡng và logistics thực phẩm.
+            </p>
+
+            <h3 class="mt-5">🛒 Sản phẩm chính</h3>
+            <ul>
+                <li>Rau củ quả hữu cơ từ trang trại đạt chuẩn VietGAP, GlobalG.A.P</li>
+                <li>Thịt - cá - trứng từ nguồn chăn nuôi khép kín</li>
+                <li>Gạo, ngũ cốc nguyên hạt, hạt dinh dưỡng</li>
+                <li>Sữa, nước ép và thực phẩm chế biến sẵn sạch</li>
+            </ul>
+
+            <h3 class="mt-5">📬 Kết nối với chúng tôi</h3>
+            <ul>
+                <li><a href="https://facebook.com/coolorganic.vn" target="_blank">Facebook: Cool Organic</a></li>
+                <li><a href="https://instagram.com/coolorganic.vn" target="_blank">Instagram: @coolorganic.vn</a></li>
+                <li>Zalo Official Account: Cool Organic</li>
+            </ul>
+
+            <p class="mt-4">
+                Cảm ơn bạn đã tin tưởng lựa chọn <strong>Cool Organic</strong>. Chúng tôi cam kết không ngừng cải tiến
+                để mang đến
+                <em>thực phẩm sạch, an toàn và giàu giá trị dinh dưỡng</em> cho mọi gia đình Việt.
+            </p>
+        </div>
+    </div>
+{% endblock content %}

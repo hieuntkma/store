@@ -1,0 +1,573 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load l10n %}
+{% load humanize %}
+
+
+
+{% block content %}
+
+    <!-- Hero Start -->
+    <div class="container-fluid py-5 mb-5 hero-header">
+        <div class="container py-5">
+            <div class="row g-5 align-items-center">
+                <div class="col-md-12 col-lg-7">
+                    <h4 class="mb-3 text-secondary">100% Thực phẩm sạch</h4>
+                    <h1 class="mb-5 display-3 text-primary">Rau củ quả hữu cơ và thực phẩm</h1>
+                    <div class="position-relative mx-auto">
+                        <form action="{% url 'product:product_search_view' %}" method="get">
+                            <div class="position-relative mx-auto">
+                                <input name="q"
+                                       class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill"
+                                       type="text"
+                                       placeholder="Tìm kiếm sản phẩm"
+                                       required>
+                                <button type="submit"
+                                        class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100"
+                                        style="top: 0; right: 25%;">Tìm kiếm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-12 col-lg-5">
+                    <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
+                        <div class="carousel-inner" role="listbox">
+                            <div class="carousel-item active rounded">
+                                <img src="{% static 'store/fruitable/assets/img/fresh-meat.jpg' %}"
+                                     class="w-100 rounded object-fit-cover"
+                                     style="height: 330px;" alt="First slide">
+                                <a href="#" class="btn px-4 py-2 text-white rounded">Thực phẩm tươi sống</a>
+                            </div>
+                            <div class="carousel-item rounded">
+                                <img src="{% static 'store/fruitable/assets/img/hero-img-2.jpg' %}"
+                                     class="w-100 rounded object-fit-cover"
+                                     style="height: 330px;" alt="Second slide">
+                                <a href="#" class="btn px-4 py-2 text-white rounded">Rau củ sạch</a>
+                            </div>
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselId"
+                                data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselId"
+                                data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hero End -->
+
+
+    <!-- Featurs Section Start -->
+    <div class="container-fluid px-0">
+        <div class="row g-0 text-white">
+            <!-- Item 1 -->
+            <div class="col-lg-3 col-md-6 feature-item" style="background-color: #5ad2ae;">
+                <div class="feature-overlay"></div>
+                <div class="feature-content">
+                    <h4 class="mb-3">Rau quả tươi</h4>
+                    <p class="mb-4">
+                        Chúng tôi cam kết 100% các sản phẩm có nguồn gốc xuất xứ rõ ràng, sạch, an toàn và đảm bảo chất
+                        lượng ngon nhất
+                        giao đến tận tay người tiêu dùng, để san sẻ sự vất vả của các mẹ, các chị
+                    </p>
+                </div>
+                <img src="{% static 'store/fruitable/assets/img2/imgProduct1.png' %}" alt="Rau quả tươi">
+            </div>
+
+            <!-- Item 2 -->
+            <div class="col-lg-3 col-md-6 feature-item" style="background-color: #536f1d;">
+                <div class="feature-overlay"></div>
+                <div class="feature-content">
+                    <h4 class="mb-3">Sinh tố hoa quả</h4>
+                    <p class="mb-4">
+                        Chúng tôi cam kết 100% các sản phẩm có nguồn gốc xuất xứ rõ ràng, sạch, an toàn và đảm bảo chất
+                        lượng ngon nhất
+                        giao đến tận tay người tiêu dùng, để san sẻ sự vất vả của các mẹ, các chị
+                    </p>
+                </div>
+                <img src="{% static 'store/fruitable/assets/img2/imgProduct2.png' %}" alt="Sinh tố hoa quả">
+            </div>
+
+            <!-- Item 3 -->
+            <div class="col-lg-3 col-md-6 feature-item" style="background-color: #f4bc83;">
+                <div class="feature-overlay"></div>
+                <div class="feature-content">
+                    <h4 class="mb-3">Thực phẩm tươi</h4>
+                    <p class="mb-4">
+                        Chúng tôi cam kết 100% các sản phẩm có nguồn gốc xuất xứ rõ ràng, sạch, an toàn và đảm bảo chất
+                        lượng ngon nhất
+                        giao đến tận tay người tiêu dùng, để san sẻ sự vất vả của các mẹ, các chị
+                    </p>
+                </div>
+                <img src="{% static 'store/fruitable/assets/img2/imgProduct3.png' %}" alt="Thực phẩm tươi">
+            </div>
+
+            <!-- Item 4 -->
+            <div class="col-lg-3 col-md-6 feature-item" style="background-color: #e56883;">
+                <div class="feature-overlay"></div>
+                <div class="feature-content">
+                    <h4 class="mb-3">Hoa quả tươi mát</h4>
+                    <p class="mb-4">
+                        Chúng tôi cam kết 100% các sản phẩm có nguồn gốc xuất xứ rõ ràng, sạch, an toàn và đảm bảo chất
+                        lượng ngon nhất
+                        giao đến tận tay người tiêu dùng, để san sẻ sự vất vả của các mẹ, các chị
+                    </p>
+                </div>
+                <img src="{% static 'store/fruitable/assets/img2/imgProduct4.png' %}" alt="Hoa quả tươi mát">
+            </div>
+        </div>
+    </div>
+    <!-- Featurs Section End -->
+
+    <!-- About us Start -->
+    <div class="container pt-5 text-center about-us-section">
+        <h2 class="mb-3">
+            <a href="/introduce">Về chúng tôi</a>
+        </h2>
+        <span class="d-inline-block mb-4" style="height: 3px; width: 40px; background-color: #28a745;"></span>
+        <p class="mb-5 text-muted" style="max-width: 840px; margin: 0 auto;">
+            Hiện tại vùng nguyên liệu của chúng tôi có thể cung cấp các thực phẩm tươi sạch với số lượng lớn vì đang vào
+            vụ
+            mùa thu hoạch nên chúng tôi có thể cung ứng cho tất cả các đối tác xuất khẩu nông sản trên cả nước.
+        </p>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <img src="{% static 'store/fruitable/assets/img2/about-us-1.png' %}" class="icon-img mb-3"
+                     alt="Trang trại hữu cơ">
+                <h5 class="fw-bold">Trang trại hữu cơ</h5>
+                <p class="text-muted small">Cung cấp 100% thực phẩm sạch đảm bảo an toàn và ngon nhất</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <img src="{% static 'store/fruitable/assets/img2/about-us-2.png' %}" class="icon-img mb-3"
+                     alt="Thực phẩm sạch">
+                <h5 class="fw-bold">Thực phẩm sạch</h5>
+                <p class="text-muted small">Cung cấp 100% thực phẩm sạch đảm bảo an toàn và ngon nhất</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <img src="{% static 'store/fruitable/assets/img2/about-us-3.png' %}" class="icon-img mb-3"
+                     alt="An toàn sinh học">
+                <h5 class="fw-bold">An toàn sinh học</h5>
+                <p class="text-muted small">Cung cấp 100% thực phẩm sạch đảm bảo an toàn và ngon nhất</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <img src="{% static 'store/fruitable/assets/img2/about-us-4.png' %}" class="icon-img mb-3"
+                     alt="Đa dạng sinh học">
+                <h5 class="fw-bold">Đa dạng sinh học</h5>
+                <p class="text-muted small">Cung cấp 100% thực phẩm sạch đảm bảo an toàn và ngon nhất</p>
+            </div>
+        </div>
+    </div>
+    <!-- About us End -->
+
+    <!-- Fruits Shop Start-->
+    <div class="container-fluid fruite py-5">
+        <div class="container">
+            <div class="tab-class text-center">
+                <div class="row g-4">
+                    <div class="text-center mb-2">
+                        <h1 class="section-title">DANH MỤC SẢN PHẨM</h1>
+                        <div class="section-icon my-3 d-flex justify-content-center align-items-center gap-2">
+                            <hr class="line"/>
+                            <img src="{% static 'store/fruitable/assets/img2/icon-green.png' %}" alt="icon"
+                                 style="height: 24px;">
+                            <hr class="line"/>
+                        </div>
+                        <ul class="nav nav-pills d-inline-flex text-center mb-5" id="category-tab-nav"></ul>
+                    </div>
+
+                </div>
+                <div class="tab-content" id="category-tab-content"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Fruits Shop End-->
+
+
+    {#    <!-- Featurs Start -->#}
+    {#    <div class="container-fluid service py-5">#}
+    {#        <div class="container py-5">#}
+    {#            <div class="row g-4 justify-content-center">#}
+    {#                <div class="col-md-6 col-lg-4">#}
+    {#                    <a href="#">#}
+    {#                        <div class="service-item bg-secondary rounded border border-secondary">#}
+    {#                            <img src="{% static 'store/fruitable/assets/img/featur-1.jpg' %}"#}
+    {#                                 class="img-fluid rounded-top w-100" alt="">#}
+    {#                            <div class="px-4 rounded-bottom">#}
+    {#                                <div class="service-content bg-primary text-center p-4 rounded">#}
+    {#                                    <h5 class="text-white">Fresh Apples</h5>#}
+    {#                                    <h3 class="mb-0">20% OFF</h3>#}
+    {#                                </div>#}
+    {#                            </div>#}
+    {#                        </div>#}
+    {#                    </a>#}
+    {#                </div>#}
+    {#                <div class="col-md-6 col-lg-4">#}
+    {#                    <a href="#">#}
+    {#                        <div class="service-item bg-dark rounded border border-dark">#}
+    {#                            <img src="{% static 'store/fruitable/assets/img/featur-2.jpg' %}"#}
+    {#                                 class="img-fluid rounded-top w-100" alt="">#}
+    {#                            <div class="px-4 rounded-bottom">#}
+    {#                                <div class="service-content bg-light text-center p-4 rounded">#}
+    {#                                    <h5 class="text-primary">Tasty Fruits</h5>#}
+    {#                                    <h3 class="mb-0">Free delivery</h3>#}
+    {#                                </div>#}
+    {#                            </div>#}
+    {#                        </div>#}
+    {#                    </a>#}
+    {#                </div>#}
+    {#                <div class="col-md-6 col-lg-4">#}
+    {#                    <a href="#">#}
+    {#                        <div class="service-item bg-primary rounded border border-primary">#}
+    {#                            <img src="{% static 'store/fruitable/assets/img/featur-3.jpg' %}"#}
+    {#                                 class="img-fluid rounded-top w-100" alt="">#}
+    {#                            <div class="px-4 rounded-bottom">#}
+    {#                                <div class="service-content bg-secondary text-center p-4 rounded">#}
+    {#                                    <h5 class="text-white">Exotic Vegitable</h5>#}
+    {#                                    <h3 class="mb-0">Discount 30$</h3>#}
+    {#                                </div>#}
+    {#                            </div>#}
+    {#                        </div>#}
+    {#                    </a>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <!-- Featurs End -->#}
+
+
+    <!-- Vesitable Shop Start-->
+    <div class="container-fluid vesitable">
+        <div class="container">
+            <div class="text-center mb-2">
+                <h1 class="section-title">RAU CỦ TƯƠI</h1>
+                <div class="section-icon my-3 d-flex justify-content-center align-items-center gap-2">
+                    <hr class="line"/>
+                    <img src="{% static 'store/fruitable/assets/img2/icon-green.png' %}" alt="icon"
+                         style="height: 24px;">
+                    <hr class="line"/>
+                </div>
+                <div class="owl-carousel vegetable-carousel justify-content-center">
+                    <div class="border border-primary rounded position-relative vesitable-item">
+                        <!-- Ảnh -->
+                        <div class="vesitable-img">
+                            <img src="{{ sp.get_thumbnail }}" class="img-fluid w-100 rounded-top"
+                                 alt="{{ sp.product_name }}">
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="text-white bg-primary px-3 py-1 rounded position-absolute"
+                             style="top: 10px; left: 10px;">
+                            {{ sp.get_categories }}
+                        </div>
+
+                        <!-- Thông tin + hành động -->
+                        <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                            <!-- Tên sản phẩm -->
+                            <h6 class="fw-semibold mb-3 text-dark text-center product-name"
+                                title="{{ sp.product_name }}"
+                                style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden; text-overflow: ellipsis;">
+                                {{ sp.product_name }}
+                            </h6>
+
+                            <!-- Giá -->
+                            <div class="price-area text-center mb-3">
+                                <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">
+                                    {{ sp.sale_price|intcomma }}₫
+                                </span>
+                                <del class="text-muted small" style="font-size: 0.9rem;">
+                                    {{ sp.price|intcomma }}₫
+                                </del>
+                            </div>
+
+                            <!-- Nút hành động -->
+                            <div class="d-flex flex-column align-items-center gap-2 mt-auto">
+                                <a href="#"
+                                   class="btn border border-secondary rounded-pill px-3 text-primary">
+                                    <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vesitable Shop End -->
+
+
+
+
+
+    <!-- Bestsaler Product Start -->
+    <div class="container-fluid">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="section-title">SẢN PHẨM BÁN CHẠY</h1>
+            <div class="section-icon my-3 d-flex justify-content-center align-items-center gap-2">
+                <hr class="line"/>
+                <img src="{% static 'store/fruitable/assets/img2/icon-green.png' %}" alt="icon"
+                     style="height: 24px;">
+                <hr class="line"/>
+            </div>
+            <div class="row g-4" id="best-seller-products-container">
+                <div class="col-lg-6 col-xl-4">
+                    <div class="p-4 rounded bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <img src="{% static 'store/fruitable/assets/img/best-product-1.jpg' %}"
+                                     class="img-fluid rounded-circle w-100" alt="">
+                            </div>
+                            <div class="col-6">
+                                <a href="#" class="h5">Organic Tomato</a>
+                                <div class="d-flex my-3">
+                                    <i class="fas fa-star text-primary"></i>
+                                    <i class="fas fa-star text-primary"></i>
+                                    <i class="fas fa-star text-primary"></i>
+                                    <i class="fas fa-star text-primary"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <h4 class="mb-3">$4.99</h4>
+                                <a href="#"
+                                   class="btn border border-secondary rounded-pill px-3 text-primary">
+                                    <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bestsaler Product End -->
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+    {#    #### danh mục sản phẩm #####}
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "{% url 'portal:category_tab_with_products_api_view' %}",
+                type: "GET",
+                success: function (res) {
+                    const nav = $("#category-tab-nav");
+                    const content = $("#category-tab-content");
+
+                    nav.empty();
+                    content.empty();
+
+                    res.tabs.forEach((tab, index) => {
+                        const tabId = `tab-${tab.slug}`;
+
+                        // Nav item
+                        nav.append(`
+                    <li class="nav-item">
+                        <a class="d-flex m-2 py-2 bg-light rounded-pill ${index === 0 ? 'active' : ''}"
+                           data-bs-toggle="pill" href="#${tabId}">
+                            <span class="text-dark" style="width: 130px;">${tab.title}</span>
+                        </a>
+                    </li>
+                `);
+
+                        // Content pane
+                        let productsHtml = "";
+                        tab.products.forEach(product => {
+                            productsHtml += `
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                             <div class="fruite-item card border border-warning rounded overflow-hidden">
+                                                <div class="fruite-img">
+                                                    <a href="/product/shop-detail/${product.uuid}">
+                                                        <img src="${product.thumbnail}" class="img-fluid w-100 rounded-top" alt="" style="height: 250px; object-fit: cover;">
+                                                    </a>
+                                                </div>
+                                                <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">
+                                                    ${product.category}
+                                                </div>
+                                                <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                                                    <h6 class="fw-semibold mb-3 text-dark product-name text-center" title="${product.name}">
+                                                        ${product.name}
+                                                    </h6>
+                                                    <div class="price-area text-center mb-3">
+                                                        <span class="text-success fw-bold me-2">
+                                                            ${product.sale_price.toLocaleString()}₫
+                                                        </span>
+                                                        <del class="text-muted small">
+                                                            ${product.price.toLocaleString()}₫
+                                                        </del>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-items-center gap-2 mt-auto">
+                                                        <a href="/product/shop-detail/${product.uuid}/" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                            <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                        });
+
+                        content.append(`
+                    <div id="${tabId}" class="tab-pane fade ${index === 0 ? 'show active' : ''} p-0">
+                        <div class="row g-4">${productsHtml}</div>
+                    </div>
+                `);
+                    });
+                },
+                error: function () {
+                    console.error("Lỗi khi tải tab danh mục.");
+                }
+            });
+        });
+    </script>
+
+    {#    ### Sản phẩm rau củ ####}
+    <script>
+        $(document).ready(function () {
+            const container = $(".vegetable-carousel");
+
+            // Gọi AJAX
+            $.ajax({
+                url: "{% url 'portal:vegetable_product_list_api_view' %}",
+                method: "GET",
+                success: function (res) {
+                    if (!res.products || res.products.length === 0) {
+                        console.warn("Không có sản phẩm để hiển thị.");
+                        return;
+                    }
+
+                    // Hủy carousel cũ nếu đã có
+                    if (container.hasClass("owl-loaded")) {
+                        container.trigger('destroy.owl.carousel');
+                        container.removeClass('owl-loaded owl-carousel owl-theme');
+                        container.find('.owl-stage-outer').children().unwrap();
+                        container.html("");  // xóa nội dung cũ
+                    }
+
+                    // Thêm class owl-carousel (nếu bị mất sau khi destroy)
+                    container.addClass("owl-carousel");
+
+                    // Tạo nội dung HTML
+                    let html = "";
+                    res.products.forEach(product => {
+                        html += `
+                        <div class="item">
+                            <div class="border border-primary rounded position-relative vesitable-item">
+                                <div class="vesitable-img">
+                                    <img src="${product.thumbnail}" class="img-fluid w-100 rounded-top" alt="${product.product_name}">
+                                </div>
+                                <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">
+                                    ${product.category}
+                                </div>
+                                <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                                    <h6 class="fw-semibold mb-3 text-dark text-center product-name"
+                                        title="${product.product_name}"
+                                        style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden; text-overflow: ellipsis;">
+                                        ${product.product_name}
+                                    </h6>
+                                    <div class="price-area text-center mb-3">
+                                        <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">
+                                            ${product.sale_price?.toLocaleString() || ''}₫
+                                        </span>
+                                        <del class="text-muted small" style="font-size: 0.9rem;">
+                                            ${product.price.toLocaleString()}₫
+                                        </del>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-center gap-2 mt-auto">
+                                        <a href="/product/shop-detail/${product.uuid}/"
+                                           class="btn border border-secondary rounded-pill px-3 text-primary">
+                                            <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+
+                    // Gán lại HTML
+                    container.html(html);
+
+                    // Khởi động lại carousel
+                    container.owlCarousel({
+                        loop: true,
+                        margin: 16,
+                        nav: true,               // bật nút next/prev
+                        dots: false,
+                        autoplay: true,          // ✅ Tự động chạy
+                        autoplayTimeout: 4000,   // ✅ thời gian giữa mỗi slide (ms)
+                        autoplayHoverPause: true, // ✅ dừng khi hover
+                        navText: [
+                            '<i class="fas fa-chevron-left text-primary"></i>',
+                            '<i class="fas fa-chevron-right text-primary"></i>'
+                        ], // ✅ thay chữ bằng icon mũi tên
+                        responsive: {
+                            0: {items: 1},
+                            576: {items: 2},
+                            768: {items: 3},
+                            992: {items: 4}
+                        }
+                    });
+                },
+                error: function () {
+                    console.error("Không thể load sản phẩm rau củ.");
+                }
+            });
+        });
+    </script>
+
+    {#    ### best seller #####}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('product/api/best-seller-products/?limit=6')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('best-seller-products-container');
+                    container.innerHTML = '';
+
+                    data.data.forEach(product => {
+                        container.innerHTML += `
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="p-4 rounded bg-light h-100">
+                                <div class="row align-items-center">
+                                    <div class="col-6">
+                                        <img src="${product.thumbnail}" class="img-fluid rounded-circle w-100" alt="">
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="${product.detail_url}" class="h6">${product.name}</a>
+                                        <div class="d-flex my-3">
+                                            <i class="fas fa-star text-secondary"></i>
+                                            <i class="fas fa-star text-secondary"></i>
+                                            <i class="fas fa-star text-secondary"></i>
+                                            <i class="fas fa-star text-secondary"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <div class="price-area text-center mb-3">
+                                                <span class="text-success fw-bold me-2">
+                                                    ${product.sale_price.toLocaleString()}₫
+                                                </span>
+                                                <del class="text-muted small">
+                                                    ${product.price.toLocaleString()}₫
+                                                </del>
+                                        </div>
+                                        <a href="${product.detail_url}"
+                                           class="btn border border-secondary rounded-pill px-3 text-primary">
+                                            <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    });
+                });
+        });
+    </script>
+{% endblock %}
