@@ -72,6 +72,7 @@ ROOT_URLCONF = 'store.urls'
 TEMPLATE_DIRS = [
     os.path.join(BASE_DIR, 'store', 'templates'),  # Absolute Path
     os.path.join(BASE_DIR, 'portal', 'templates'),  # Absolute Path
+    # os.path.join(BASE_DIR, 'workspace', 'templates'),  # Absolute Path
 ]
 
 for app in APP_LIST:

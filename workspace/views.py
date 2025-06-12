@@ -12,5 +12,5 @@ from django.contrib.auth.decorators import login_required
 def index(request):
     context = {}
 
-    template = loader.get_template(str('workspace/fruitable/base_account_info.html'))
+    template = loader.get_template(str('workspace/mantis/workspace.html'))
     return HttpResponse(template.render(context, request))
