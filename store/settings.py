@@ -13,9 +13,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from os import environ
+# from dotenv import load_dotenv
+# from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -28,6 +31,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://hnt-test.com',
+    "https://hnt-test.com",
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -164,7 +171,8 @@ DATABASES = {
         'NAME': NS_store_DB_NAME,
         'USER': NS_store_DB_USER,
         'PASSWORD': NS_store_DB_PASSWORD,
-        'HOST': NS_store_DB_HOST,
+        'HOST': 'db',
+        # 'HOST': NS_store_DB_HOST,
         'PORT': NS_store_DB_PORT,
         'TEST': {
             'NAME': NS_store_DB_TEST_NAME,
