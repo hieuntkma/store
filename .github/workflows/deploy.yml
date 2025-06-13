@@ -23,6 +23,9 @@ jobs:
           password: ${{secrets.SSH_RSA_KEY}}
           source: "./"
           target: "/python/store"
+      - name: Debug port usage (optional)
+        run: |
+          netstat -tulpn || ss -tulpn || echo "netstat not found"
 
       - name: SSH into server and run docker-compose
         uses: appleboy/ssh-action@master
