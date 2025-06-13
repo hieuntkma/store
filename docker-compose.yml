@@ -12,11 +12,11 @@ services:
     image: django-docker
     container_name: hnt-web
     build: .
-    command: gunicorn --bind 0.0.0.0:8000 --workers 3 store.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8989 --workers 3 store.wsgi:application
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "8000:8989"
     depends_on:
       - db
 

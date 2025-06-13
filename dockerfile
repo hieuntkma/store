@@ -8,6 +8,6 @@ RUN pip install -r requirements.txt
 COPY . .
 ENV PYTHONPATH=/app
 
-EXPOSE 8000
+EXPOSE 8989
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "store.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8989", "--workers", "3", "store.wsgi:application"]
