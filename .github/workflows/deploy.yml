@@ -20,7 +20,7 @@ jobs:
           host: ${{secrets.HOST}}
           port: ${{secrets.PORT}}
           username: root
-          key: ${{secrets.SSH_RSA_KEY}}
+          password: ${{secrets.SSH_RSA_KEY}}
           source: "./"
           target: "/python/store"
 
@@ -29,7 +29,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: root
-          key: ${{ secrets.SSH_RSA_KEY }}
+          password: ${{ secrets.SSH_RSA_KEY }}
           port: ${{ secrets.PORT }}
           script: |
             cd /python/store
