@@ -1,0 +1,129 @@
+{% extends 'account/authentications/base_auth.html' %}
+{% load static %}
+{% block authen %}
+    <div>
+        <div class="text-center mb-4">
+            <h3 class="text-dark">Create an Account</h3>
+            <p class="text-muted small">Already have an account? <a href="{% url 'account:signin_view' %}">Sign in
+                here</a></p>
+        </div>
+
+        <form id="signup-form">
+            <div id="signup-error" class="alert alert-danger d-none"></div>
+
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" id="first_name" class="form-control" required>
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" id="last_name" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="repeat_password" class="form-label">Repeat Password</label>
+                <input type="password" id="repeat_password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    {#<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>#}
+    <script>
+        function validatePassword(password) {
+            const minLength = 8;
+            const hasNumber = /\d/;
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+            if (password.length < minLength) {
+                return "Password must be at least 8 characters.";
+            }
+            if (!hasNumber.test(password)) {
+                return "Password must contain at least one number.";
+            }
+            if (!hasSpecialChar.test(password)) {
+                return "Password must contain at least one special character.";
+            }
+            return null;
+        }
+
+        $(document).ready(function () {
+            $('#signup-form').submit(function (e) {
+                e.preventDefault();
+
+                $('#signup-error').addClass('d-none').text('');
+
+                const data = {
+                    first_name: $('#first_name').val(),
+                    last_name: $('#last_name').val(),
+                    username: $('#username').val(),
+                    email: $('#email').val(),
+                    password: $('#password').val(),
+                    repeat_password: $('#repeat_password').val()
+                };
+
+                if (data.password !== data.repeat_password) {
+                    $('#signup-error').removeClass('d-none').text('Passwords do not match.');
+                    return;
+                }
+
+                // 👇 Validate password strength
+                const passwordError = validatePassword(data.password);
+                if (passwordError) {
+                    $('#signup-error').removeClass('d-none').text(passwordError);
+                    return;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "account:signup_api_view" %}',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Registration Successful!',
+                                text: 'Your account has been created.',
+                                confirmButtonText: 'Go to Login'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '{% url "account:signin_view" %}';
+                                }
+                            });
+                        } else {
+                            $('#signup-error').removeClass('d-none').text(response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        const res = xhr.responseJSON;
+                        $('#signup-error').removeClass('d-none').text(res?.message || 'An error occurred.');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

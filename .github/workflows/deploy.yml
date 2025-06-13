@@ -1,0 +1,38 @@
+name: CI/CD Deploy to Server
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Send built files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{secrets.HOST}}
+          port: ${{secrets.PORT}}
+          username: root
+          key: ${{secrets.SSH_RSA_KEY}}
+          source: "./"
+          target: "/python/store"
+
+      - name: SSH into server and run docker-compose
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: root
+          key: ${{ secrets.SSH_RSA_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /python/store
+            docker compose down
+            docker compose up -d --build
+          
