@@ -256,45 +256,45 @@
                 </div>
                 <div class="owl-carousel vegetable-carousel justify-content-center">
                     <div class="border border-primary rounded position-relative vesitable-item">
-                        <!-- Ảnh -->
-                        <div class="vesitable-img">
-                            <img src="{{ sp.get_thumbnail }}" class="img-fluid w-100 rounded-top"
-                                 alt="{{ sp.product_name }}">
-                        </div>
-
-                        <!-- Danh mục -->
-                        <div class="text-white bg-primary px-3 py-1 rounded position-absolute"
-                             style="top: 10px; left: 10px;">
-                            {{ sp.get_categories }}
-                        </div>
-
-                        <!-- Thông tin + hành động -->
-                        <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
-                            <!-- Tên sản phẩm -->
-                            <h6 class="fw-semibold mb-3 text-dark text-center product-name"
-                                title="{{ sp.product_name }}"
-                                style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden; text-overflow: ellipsis;">
-                                {{ sp.product_name }}
-                            </h6>
-
-                            <!-- Giá -->
-                            <div class="price-area text-center mb-3">
-                                <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">
-                                    {{ sp.sale_price|intcomma }}₫
-                                </span>
-                                <del class="text-muted small" style="font-size: 0.9rem;">
-                                    {{ sp.price|intcomma }}₫
-                                </del>
-                            </div>
-
-                            <!-- Nút hành động -->
-                            <div class="d-flex flex-column align-items-center gap-2 mt-auto">
-                                <a href="#"
-                                   class="btn border border-secondary rounded-pill px-3 text-primary">
-                                    <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
-                                </a>
-                            </div>
-                        </div>
+                        {#                        <!-- Ảnh -->#}
+                        {#                        <div class="vesitable-img">#}
+                        {#                            <img src="{{ sp.get_thumbnail }}" class="img-fluid w-100 rounded-top"#}
+                        {#                                 alt="{{ sp.product_name }}">#}
+                        {#                        </div>#}
+                        {##}
+                        {#                        <!-- Danh mục -->#}
+                        {#                        <div class="text-white bg-primary px-3 py-1 rounded position-absolute"#}
+                        {#                             style="top: 10px; left: 10px;">#}
+                        {#                            {{ sp.get_categories }}#}
+                        {#                        </div>#}
+                        {##}
+                        {#                        <!-- Thông tin + hành động -->#}
+                        {#                        <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">#}
+                        {#                            <!-- Tên sản phẩm -->#}
+                        {#                            <h6 class="fw-semibold mb-3 text-dark text-center product-name"#}
+                        {#                                title="{{ sp.product_name }}"#}
+                        {#                                style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden; text-overflow: ellipsis;">#}
+                        {#                                {{ sp.product_name }}#}
+                        {#                            </h6>#}
+                        {##}
+                        {#                            <!-- Giá -->#}
+                        {#                            <div class="price-area text-center mb-3">#}
+                        {#                                <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">#}
+                        {#                                    {{ sp.sale_price|intcomma }}₫#}
+                        {#                                </span>#}
+                        {#                                <del class="text-muted small" style="font-size: 0.9rem;">#}
+                        {#                                    {{ sp.price|intcomma }}₫#}
+                        {#                                </del>#}
+                        {#                            </div>#}
+                        {##}
+                        {#                            <!-- Nút hành động -->#}
+                        {#                            <div class="d-flex flex-column align-items-center gap-2 mt-auto">#}
+                        {#                                <a href="#"#}
+                        {#                                   class="btn border border-secondary rounded-pill px-3 text-primary">#}
+                        {#                                    <i class="fas fa-search me-2 text-success"></i> Xem chi tiết#}
+                        {#                                </a>#}
+                        {#                            </div>#}
+                        {#                        </div>#}
                     </div>
                 </div>
             </div>
@@ -448,11 +448,10 @@
                     if (container.hasClass("owl-loaded")) {
                         container.trigger('destroy.owl.carousel');
                         container.removeClass('owl-loaded owl-carousel owl-theme');
-                        container.find('.owl-stage-outer').children().unwrap();
                         container.html("");  // xóa nội dung cũ
                     }
 
-                    // Thêm class owl-carousel (nếu bị mất sau khi destroy)
+// Thêm lại class owl-carousel
                     container.addClass("owl-carousel");
 
                     // Tạo nội dung HTML
