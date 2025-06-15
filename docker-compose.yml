@@ -41,6 +41,9 @@ services:
     networks:
       - hnt-network
 
+networks:
+  hnt-network:
+    driver: bridge
 #  certbot:
 #    image: certbot/certbot
 #    container_name: certbot
