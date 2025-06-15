@@ -7,6 +7,8 @@ services:
       - .env
     ports:
       - "5433:5432"
+    volumes:
+      - /python/data:/var/lib/postgresql/data
       # - /python/postgres/data/todoapp:/var/lib/postgresql/data
   web:
     image: django-docker
