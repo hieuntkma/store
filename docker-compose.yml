@@ -10,6 +10,9 @@ services:
     volumes:
       - /python/data:/var/lib/postgresql/data
       - /python/data/store.sql:/docker-entrypoint-initdb.d/init_data.sql:ro
+    networks:
+      - hnt-network
+
   web:
     image: django-docker
     container_name: hnt-web
@@ -21,6 +24,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    networks:
+      - hnt-network
 
   nginx:
     image: nginx:latest
@@ -33,6 +38,8 @@ services:
       - ./media:/app/media
     depends_on:
       - web
+    networks:
+      - hnt-network
 
 #  certbot:
 #    image: certbot/certbot
