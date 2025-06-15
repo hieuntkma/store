@@ -7,4 +7,5 @@ from django.contrib.auth import views as auth_views
 app_name = "workspace"
 urlpatterns = [
     path('', views.index, name='index'),
+    path('hello/', views.hello, name='hello'),
 ]

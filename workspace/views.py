@@ -14,3 +14,11 @@ def index(request):
 
     template = loader.get_template(str('workspace/mantis/workspace.html'))
     return HttpResponse(template.render(context, request))
+
+
+def hello(request):
+    context = {}
+
+    template = loader.get_template(str('workspace/mantis/workspace.html'))
+    # return HttpResponse(template.render(context, request))
+    return HttpResponse("This is Django server!")
