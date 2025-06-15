@@ -32,9 +32,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://hnt-test.com',
-    "https://hnt-test.com",
+    "http://hieunamson.id.vn",
+    "https://hieunamson.id.vn",  # nếu bạn dùng HTTPS
 ]
+
 # Application definition
 
 INSTALLED_APPS = [
