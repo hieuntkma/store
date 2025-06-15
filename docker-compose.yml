@@ -9,7 +9,7 @@ services:
       - "5433:5432"
     volumes:
       - /python/data:/var/lib/postgresql/data
-      # - /python/postgres/data/todoapp:/var/lib/postgresql/data
+      - /python/data/store.sql:/docker-entrypoint-initdb.d/init_data.sql:ro
   web:
     image: django-docker
     container_name: hnt-web
