@@ -21,4 +21,4 @@ def hello(request):
 
     template = loader.get_template(str('workspace/mantis/workspace.html'))
     # return HttpResponse(template.render(context, request))
-    return HttpResponse("This is Django server!")
+    return HttpResponse("Hello guy!!!")
