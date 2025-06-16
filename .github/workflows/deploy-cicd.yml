@@ -1,5 +1,4 @@
-name: CI/CD Deploy to Server
-
+name: CI/CD Deploy to Server 2.0
 on:
   push:
     branches:
@@ -67,16 +66,16 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           port: ${{ secrets.PORT }}
-          username: deploy_user
-          key: ${{ secrets.SSH_RSA_KEY }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SSH_RSA_KEY }}
           source: "docker-compose.yml"
           target: "/python/store"
       - name: 🚀 SSH and deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
-          username: deploy_user
-          key: ${{ secrets.SSH_RSA_KEY }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SSH_RSA_KEY }}
           port: ${{ secrets.PORT }}
           script: |
             cd /python/store
