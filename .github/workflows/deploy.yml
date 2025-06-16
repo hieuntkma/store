@@ -21,7 +21,6 @@ jobs:
             --exclude=".git" \
             --exclude="__pycache__" \
             --exclude="*.sqlite3" \
-            --exclude=".env" \
             --exclude="store.tar.gz" \
             --warning=no-file-changed \
             --ignore-failed-read \
