@@ -1,5 +1,5 @@
+version: '3.8'
 services:
-
   db:
     image: postgres:latest
     container_name: hnt-db
@@ -14,12 +14,9 @@ services:
       - hnt-network
 
   web:
-    image: django-docker
+    image: hieuntkma/store:latest # Sửa từ django-docker và bỏ build
     container_name: hnt-web
-    build: .
     command: gunicorn --bind 0.0.0.0:8000 --workers 3 store.wsgi:application
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -44,13 +41,3 @@ services:
 networks:
   hnt-network:
     driver: bridge
-#  certbot:
-#    image: certbot/certbot
-#    container_name: certbot
-#    volumes:
-#      - ./certbot/conf:/etc/letsencrypt
-#      - ./certbot/www:/var/www/certbot
-#    entrypoint: >
-#      sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot
-#      --email nthieu141204@gmail.com --agree-tos --no-eff-email
-#      -d hieunamson.id.vn"
