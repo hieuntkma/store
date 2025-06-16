@@ -12,23 +12,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: ✅ Checkout code
         uses: actions/checkout@v4
 
-      - name: Send built files to server
+      - name: 📦 Compress source code (exclude .git, __pycache__, *.sqlite3, .env)
+        run: |
+          tar --exclude=".git" --exclude="__pycache__" --exclude="*.sqlite3" -czf store.tar.gz .
+
+      - name: 📤 Upload to server via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{secrets.HOST}}
-          port: ${{secrets.PORT}}
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
           username: root
-          password: ${{secrets.SSH_RSA_KEY}}
-          source: "./"
-          target: "/python/store"
-      - name: Debug port usage (optional)
-        run: |
-          netstat -tulpn || ss -tulpn || echo "netstat not found"
+          password: ${{ secrets.SSH_RSA_KEY }}
+          source: "store.tar.gz"
+          target: "/python"
 
-      - name: SSH into server and run docker-compose
+      - name: 🚀 SSH and deploy on server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -36,7 +37,25 @@ jobs:
           password: ${{ secrets.SSH_RSA_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd /python/store
+            cd /python
+
+            echo "📦 Giải nén mã nguồn..."
+            rm -rf store_old
+            [ -d store ] && mv store store_old
+            mkdir store && tar -xzf store.tar.gz -C store
+            rm store.tar.gz
+
+            echo "🐳 Dừng dịch vụ cũ (nếu có)..."
+            cd store
             docker compose down
+
+            echo "🧹 Xoá image không còn dùng..."
+            docker image prune -a -f
+
+            echo "🧹 Xoá cache build..."
+            docker builder prune -f
+
+            echo "🚀 Khởi động lại dịch vụ..."
             docker compose up -d --build
 
+            echo "✅ Deploy hoàn tất!"
