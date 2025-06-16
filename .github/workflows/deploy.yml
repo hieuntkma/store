@@ -17,7 +17,7 @@ jobs:
 
       - name: 📦 Compress source code (exclude .git, __pycache__, *.sqlite3, .env)
         run: |
-          tar --exclude=".git" --exclude="__pycache__" --exclude="*.sqlite3" --exclude="store.tar.gz" -czf /tmp/store.tar.gz .
+          tar --exclude=".git" --exclude="__pycache__" --exclude="*.sqlite3" --exclude="store.tar.gz" -czf store.tar.gz .
 
       - name: 📤 Upload to server via SCP
         uses: appleboy/scp-action@v0.1.7
