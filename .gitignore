@@ -181,3 +181,5 @@ cython_debug/
 .idea
 
 # crawl
+hnt_setttings.py
+!store/static/store/fruitable/assets/lib/**
