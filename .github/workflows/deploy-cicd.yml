@@ -4,11 +4,11 @@ on:
     branches:
       - develop
       - production
-    paths:
-      - 'src/**'
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - 'requirements.txt'
+#    paths:
+#      - 'src/**'
+#      - 'Dockerfile'
+#      - 'docker-compose.yml'
+#      - 'requirements.txt'
 
 jobs:
   test:
