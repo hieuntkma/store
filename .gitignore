@@ -21,7 +21,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
 lib64/
 parts/
 sdist/
@@ -182,4 +182,4 @@ cython_debug/
 
 # crawl
 hnt_setttings.py
-!store/static/store/fruitable/assets/lib/**
+#!store/static/store/fruitable/assets/lib/**
