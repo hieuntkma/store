@@ -9,7 +9,7 @@ services:
       - "5433:5432"
     volumes:
       - /python/data:/var/lib/postgresql/data
-      - /python/data/store.sql:/docker-entrypoint-initdb.d/init_data.sql:ro
+      - /python/store.sql:/docker-entrypoint-initdb.d/init_data.sql:ro
     networks:
       - hnt-network
 
