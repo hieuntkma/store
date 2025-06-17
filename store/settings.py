@@ -33,7 +33,9 @@ ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
     "http://hieunamson.id.vn",
-    "https://hieunamson.id.vn",  # nếu bạn dùng HTTPS
+    "https://hieunamson.id.vn",  # nếu bạn dùng HTTPS 
+    "http://test.hieunamson.id.vn",
+    "https://test.hieunamson.id.vn",  # nếu bạn dùng HTTPS
 ]
 
 # Application definition
