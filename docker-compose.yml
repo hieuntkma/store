@@ -14,7 +14,7 @@ services:
       - hnt-network
 
   web:
-    image: hieuntkma/store:latest # Sửa từ django-docker và bỏ build
+    image: hieuntkma/store:latest
     container_name: hnt-web
     command: gunicorn --bind 0.0.0.0:8000 --workers 3 store.wsgi:application
     ports:
@@ -25,7 +25,6 @@ services:
       - /static:/app/static 
     networks:
       - hnt-network
-
 
 networks:
   hnt-network:

@@ -101,4 +101,6 @@ jobs:
             echo "📊 Dung lượng sau deploy:"
             docker system df
             df -h
+            echo "📦 Chạy collectstatic..."
+            docker compose exec -T web python manage.py collectstatic --noinput
             echo "✅ Deploy hoàn tất!"
