@@ -23,13 +23,25 @@ def admin_index_view(request):
     template = loader.get_template(str('workspace/mazer/workspace.html'))
     return HttpResponse(template.render(context, request))
 
+
 @login_required(login_url='account:signin_view')
 def products_management_view(request):
     context = {}
     context["breadscrumb"] = "Sản phẩm"
     context["breadscrumb_url"] = reverse('workspace:products_management_view')
-    template = loader.get_template(str('workspace/mazer/categories_mgmt.html'))
+    template = loader.get_template(str('workspace/mazer/products_mgmt.html'))
     return HttpResponse(template.render(context, request))
+
+
+@login_required(login_url='account:signin_view')
+def create_products_management_view(request):
+    context = {}
+    context["breadscrumb"] = "Sản phẩm"
+    context["breadscrumb_url"] = reverse('workspace:products_management_view')
+    template = loader.get_template(str('workspace/mazer/create_products_mgmt.html'))
+    return HttpResponse(template.render(context, request))
+
+
 @login_required(login_url='account:signin_view')
 def categories_management_view(request):
     context = {}
@@ -38,6 +50,8 @@ def categories_management_view(request):
 
     template = loader.get_template(str('workspace/mazer/categories_mgmt.html'))
     return HttpResponse(template.render(context, request))
+
+
 @login_required(login_url='account:signin_view')
 def inventory_management_view(request):
     context = {}
@@ -47,6 +61,7 @@ def inventory_management_view(request):
     template = loader.get_template(str('workspace/mazer/categories_mgmt.html'))
     return HttpResponse(template.render(context, request))
 
+
 @login_required(login_url='account:signin_view')
 def orders_management_view(request):
     context = {}
@@ -55,6 +70,7 @@ def orders_management_view(request):
 
     template = loader.get_template(str('workspace/mazer/categories_mgmt.html'))
     return HttpResponse(template.render(context, request))
+
 
 @login_required(login_url='account:signin_view')
 def users_management_view(request):

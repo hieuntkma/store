@@ -390,7 +390,7 @@
             const productShopUrl = "{% url 'product:shop' %}";
             const submenu = document.getElementById("mainCategoryMenu");
 
-            fetch("/product/api/categories/")
+            fetch("/product/api/categories/user/")
                 .then(response => {
                     if (!response.ok) {
                         throw new Error("Không thể kết nối API");

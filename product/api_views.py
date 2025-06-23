@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+from django.utils.timezone import now as djnow
 
 import datetime
 
@@ -22,6 +23,41 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Categories, Product, Feedback
+
+
+# region HNT Category
+@login_required(login_url='account:signin')
+def create_category_api_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            name = data.get("name")
+            desc = data.get("desc", "")
+
+            if not name:
+                return JsonResponse({"error": "Tên danh mục là bắt buộc."}, status=400)
+
+            category = Categories.objects.create(
+                name=name,
+                desc=desc,
+                active=True,
+                created_at=djnow()
+            )
+
+            return JsonResponse({
+                "success": True,
+                "message": "Tạo danh mục thành công.",
+                "data": {
+                    "uuid": str(category.uuid),
+                    "name": category.name,
+                    "desc": category.desc,
+                    "created_at": category.created_at,
+                }
+            }, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Dữ liệu không hợp lệ (không phải JSON)."}, status=400)
 
 
 def category_list_api_view(request):
@@ -41,20 +77,129 @@ def category_list_api_view(request):
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
+@login_required(login_url='account:signin')
+def admin_category_list_api_view(request):
+    if request.method == "GET":
+        page = request.GET.get("page", 1)
+        # per_page = request.GET.get("per_page", 10)  # lấy từ query param
+        # try:
+        #     per_page = int(per_page)
+        # except ValueError:
+        #     per_page = 10
+        categories = Categories.objects.filter(active=True).order_by("-created_at")
+        # paginator = Paginator(categories, per_page)
+
+        # try:
+        #     current_page = paginator.page(page)
+        # except Exception:
+        #     return JsonResponse({"error": "Trang không tồn tại."}, status=404)
+
+        data = [
+            {
+                "uuid": str(cat.uuid),
+                "name": cat.name,
+                "desc": cat.desc,
+                "created_at": cat.created_at
+            }
+            # for cat in current_page
+            for cat in categories
+        ]
+
+        return JsonResponse({
+            "results": data,
+            # "total_pages": paginator.num_pages,
+            # "current_page": current_page.number,
+            # "has_next": current_page.has_next(),
+            # "has_previous": current_page.has_previous(),
+        }, safe=False)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required(login_url='account:signin')
+def edit_category_api_view(request, cat_uuid):
+    try:
+        category = Categories.objects.get(uuid=cat_uuid)
+    except Categories.DoesNotExist:
+        return JsonResponse({"error": "Không tìm thấy danh mục."}, status=404)
+
+    if request.method == "GET":
+        data = {
+            "uuid": str(category.uuid),
+            "name": category.name,
+            "desc": category.desc,
+            "created_at": category.created_at,
+        }
+        return JsonResponse(data)
+
+    elif request.method in ["PUT", "POST"]:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Dữ liệu không hợp lệ."}, status=400)
+
+        name = data.get("name")
+        desc = data.get("desc")
+
+        if not name:
+            return JsonResponse({"error": "Tên danh mục là bắt buộc."}, status=400)
+
+        # Kiểm tra trùng tên với danh mục khác
+        if Categories.objects.filter(name=name).exclude(uuid=cat_uuid).exists():
+            return JsonResponse({"error": "Danh mục đã tồn tại."}, status=400)
+
+        category.name = name
+        category.desc = desc or ""
+        category.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Cập nhật danh mục thành công.",
+            "data": {
+                "uuid": str(category.uuid),
+                "name": category.name,
+                "desc": category.desc,
+                "updated_at": category.updated_at
+            }
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required(login_url='account:signin')
+def delete_category_api_view(request, cat_uuid):
+    if request.method in ["POST", "DELETE"]:  # Cho phép cả POST nếu bạn không dùng AJAX DELETE
+        try:
+            category = Categories.objects.get(uuid=cat_uuid, active=True)
+        except Categories.DoesNotExist:
+            return JsonResponse({"error": "Danh mục không tồn tại."}, status=404)
+
+        category.delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Đã xóa danh mục: {category.name}"
+        }, status=200)
+
+    return JsonResponse({"error": "Phương thức không được hỗ trợ."}, status=405)
+
+
+# region HNT Product
 def product_list_api(request):
     page = request.GET.get('page', 1)  # Mặc định là trang 1
-    per_page = 9  # 9 sản phẩm mỗi trang
+    # per_page = 9  # 9 sản phẩm mỗi trang
 
     products = Product.objects.filter(active=True).order_by('-created_at')
-    paginator = Paginator(products, per_page)
+    # paginator = Paginator(products, per_page)
 
-    try:
-        current_page = paginator.page(page)
-    except Exception:
-        return JsonResponse({'error': 'Trang không tồn tại'}, status=404)
+    # try:
+    #     current_page = paginator.page(page)
+    # except Exception:
+    #     return JsonResponse({'error': 'Trang không tồn tại'}, status=404)
 
     data = []
-    for product in current_page:
+    # for product in current_page:
+    for product in products:
         data.append({
             'uuid': str(product.uuid),
             'name': product.name,
@@ -68,14 +213,55 @@ def product_list_api(request):
             'categories': product.get_categories(),
             'created_at': product.created_at,
             'updated_at': product.updated_at,
+            'status': product.active
         })
 
     return JsonResponse({
         'results': data,
-        'total_pages': paginator.num_pages,
-        'current_page': current_page.number,
-        'has_next': current_page.has_next(),
-        'has_previous': current_page.has_previous(),
+        # 'total_pages': paginator.num_pages,
+        # 'current_page': current_page.number,
+        # 'has_next': current_page.has_next(),
+        # 'has_previous': current_page.has_previous(),
+    }, safe=False)
+
+#### simple data table không hỗ trợ phân trang cả FE và BE nên phải list tất cả
+def admin_product_list_api(request):
+    page = request.GET.get('page', 1)  # Mặc định là trang 1
+    # per_page = 10  # 9 sản phẩm mỗi trang
+
+    products = Product.objects.filter(active=True).order_by('-created_at')
+    # paginator = Paginator(products, per_page)
+
+    # try:
+    #     current_page = paginator.page(page)
+    # except Exception:
+    #     return JsonResponse({'error': 'Trang không tồn tại'}, status=404)
+
+    data = []
+    # for product in current_page:
+    for product in products:
+        data.append({
+            'uuid': str(product.uuid),
+            'name': product.name,
+            'product_name': product.product_name,
+            'desc': product.desc,
+            'price': product.price,
+            'thumbnail_url': product.get_thumbnail,
+            'sale_price': product.sale_price,
+            'stock_quantity': product.stock_quantity,
+            'quantity': product.quantity,
+            'categories': product.get_categories(),
+            'created_at': product.created_at,
+            'updated_at': product.updated_at,
+            'status': product.active
+        })
+
+    return JsonResponse({
+        'results': data,
+        # 'total_pages': paginator.num_pages,
+        # 'current_page': current_page.number,
+        # 'has_next': current_page.has_next(),
+        # 'has_previous': current_page.has_previous(),
     }, safe=False)
 
 

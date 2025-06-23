@@ -14,15 +14,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'store/mazer/assets/css/bootstrap.css' %}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <link rel="stylesheet" href="{% static 'store/mazer/assets/vendors/iconly/bold.css' %}">
-
+    <link rel="stylesheet" href="{% static 'store/mazer/assets/vendors/simple-datatables/style.css' %}">
     <link rel="stylesheet" href="{% static 'store/mazer/assets/vendors/perfect-scrollbar/perfect-scrollbar.css' %}">
     <link rel="stylesheet" href="{% static 'store/mazer/assets/vendors/bootstrap-icons/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'store/mazer/assets/css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'store/mazer/assets/vendors/sweetalert2/sweetalert2.min.css' %}">
     <link rel="icon" href="{% static 'store/fruitable/assets/favicon2.png' %}" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
 </head>
 
 <body>
@@ -107,7 +106,7 @@
             </a>
         </header>
         {% block breadscrumb %}
-        	
+
         {% endblock %}
         {% block content %}
 
@@ -156,12 +155,13 @@
     <script src="{% static 'store/mazer/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js' %}"></script>
     <script src="{% static 'store/mazer/assets/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'store/mazer/assets/vendors/apexcharts/apexcharts.js' %}"></script>
-    {#    <script src="{% static 'store/mazer/assets/vendors/jquery/jquery.min.js' %}"></script>#}
+    <script src="{% static 'store/mazer/assets/vendors/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'store/mazer/assets/vendors/sweetalert2/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'store/mazer/assets/js/pages/dashboard.js' %}"></script>
     <script src="{% static 'store/mazer/assets/js/main.js' %}"></script>
+    <script src="{% static 'store/mazer/assets/vendors/simple-datatables/simple-datatables.js' %}"></script>
 
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+{#    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>#}
 {% endblock %}
 {% block extra_scripts %}
 
