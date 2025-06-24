@@ -1,8 +1,9 @@
 import json
+import os
 import random
 from uuid import uuid4
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -248,6 +249,7 @@ def admin_create_product_api_view(request):
 
             # Tạo sản phẩm mới
             product = Product(
+                product_name=product_name,
                 name=product_name,
                 # uuid=uuid.uuid4(),
                 categories_uuid=categories_uuid,
@@ -345,6 +347,56 @@ def admin_create_product_api_view(request):
         'status': 'error',
         'message': 'Phương thức không được hỗ trợ'
     }, status=405)
+
+
+@login_required(login_url='account:signin')
+def admin_delete_product_api_view(request, product_uuid):
+    if request.method == 'POST':
+        try:
+            # Tìm sản phẩm dựa trên UUID
+            product = Product.objects.get(uuid=product_uuid)
+
+            # Lấy tất cả ảnh sản phẩm liên quan
+            product_images = ProductImage.objects.filter(product_uuid=product_uuid)
+
+            # Lấy thumbnail liên quan
+            product_thumbnail = ProductThumbnail.objects.filter(product_uuid=product_uuid, active=True).first()
+
+            # Xóa file ảnh khỏi hệ thống tệp trước khi xóa khỏi cơ sở dữ liệu
+            media_root = settings.MEDIA_ROOT
+            for image in product_images:
+                if image.image and os.path.isfile(os.path.join(media_root, image.image.name)):
+                    os.remove(os.path.join(media_root, image.image.name))
+                image.delete()
+
+            if product_thumbnail and product_thumbnail.thumbnail and os.path.isfile(
+                    os.path.join(media_root, product_thumbnail.thumbnail.name)):
+                os.remove(os.path.join(media_root, product_thumbnail.thumbnail.name))
+                product_thumbnail.delete()
+
+            product.delete()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Sản phẩm và các tệp liên quan đã được xóa thành công'
+            }, status=200)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Sản phẩm không tồn tại hoặc đã bị xóa'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Có lỗi xảy ra: {str(e)}'
+            }, status=500)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Phương thức không được hỗ trợ'
+    }, status=405)
+
 
 #### simple data table không hỗ trợ phân trang cả FE và BE nên phải list tất cả
 @login_required(login_url='account:signin')

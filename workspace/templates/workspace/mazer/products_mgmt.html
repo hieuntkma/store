@@ -23,7 +23,8 @@
             </div>
             <div class="card-body">
                 <div>
-                    <a href="{% url 'workspace:create_products_management_view' %}" class="btn btn-success" id="create_product_btn">Thêm sản phẩm</a>
+                    <a href="{% url 'workspace:create_products_management_view' %}" class="btn btn-success"
+                       id="create_product_btn">Thêm sản phẩm</a>
                 </div>
                 <table class="table" id="product_table">
                     <thead>
@@ -45,112 +46,129 @@
             </div>
         </div>
     </section>
-
-    <!-- Modal thêm danh mục -->
-    <div class="modal fade" id="createProductModal" tabindex="-1" aria-labelledby="createProductLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createProductLabel">Thêm danh mục</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" class="form-control mb-2" id="product_name" placeholder="Tên danh mục">
-                    <textarea class="form-control" id="product_desc" placeholder="Mô tả"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="submit_product_btn">Tạo</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Modal Sửa danh mục -->
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editProductLabel">Cập nhật danh mục</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="edit_product_uuid">
-                    <input type="text" class="form-control mb-2" id="edit_product_name" placeholder="Tên danh mục">
-                    <textarea class="form-control" id="edit_product_desc" placeholder="Mô tả"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="update_product_btn">Cập nhật</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         function loadProducts() {
             $.ajax({
                 url: '/product/api/products/admin/',
                 type: 'GET',
-                headers: {},
                 success: function (response) {
                     const tbody = $('#product_table_body');
                     tbody.empty();
 
                     response.results.forEach(product => {
-                        const thumbnail = product.thumbnail_url || '/static/images/no-image.png';  // ảnh mặc định nếu không có
-
+                        const thumbnail = product.thumbnail_url || '/static/images/no-image.png';
                         const row = `
-                            <tr>
-                                <td>
-                                    <img src="${thumbnail}" alt="${product.product_name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;">
-                                    ${product.product_name}
-                                </td>
-                                <td>${product.categories || ''}</td>
-                                <td>${product.price.toLocaleString()} đ</td>
-                                <td>${product.sale_price.toLocaleString()} đ</td>
-                                <td>${product.stock_quantity}</td>
-                                <td>
-                                    ${product.status ? '<span class="badge bg-success">Hiển thị</span>' : '<span class="badge bg-secondary">Ẩn</span>'}
-                                </td>
-                                <td>${new Date(product.created_at).toLocaleDateString()}</td>
-                                <td>
-                                    <a href="#" class="text-primary me-2 edit-btn" data-uuid="${product.uuid}" title="Sửa">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </a>
-                                    <a href="#" class="text-danger delete-btn" data-uuid="${product.uuid}" title="Xóa">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </a>
-                                </td>
-                            </tr>`;
+                    <tr>
+                        <td>
+                            <img src="${thumbnail}" alt="${product.product_name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;">
+                            ${product.product_name}
+                        </td>
+                        <td>${product.categories || ''}</td>
+                        <td>${product.price.toLocaleString()} đ</td>
+                        <td>${product.sale_price.toLocaleString()} đ</td>
+                        <td>${product.stock_quantity}</td>
+                        <td>
+                            ${product.status ? '<span class="badge bg-success">Hiển thị</span>' : '<span class="badge bg-secondary">Ẩn</span>'}
+                        </td>
+                        <td>${new Date(product.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <a href="#" class="text-primary me-2 edit-btn" data-uuid="${product.uuid}" title="Sửa">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a href="#" class="text-danger delete-btn" data-uuid="${product.uuid}" title="Xóa">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </td>
+                    </tr>`;
                         tbody.append(row);
                     });
 
-                    // Khởi tạo hoặc làm mới simpleDatatables
                     if (window.myDataTable) {
                         window.myDataTable.destroy();
                     }
                     window.myDataTable = new simpleDatatables.DataTable("#product_table", {
                         perPage: 9,
-                        perPageSelect: [9, 25, 50, 100],  // Tùy chọn số dòng mỗi trang
+                        perPageSelect: [9, 25, 50, 100],
                         labels: {
                             placeholder: "Tìm kiếm...",
-                            {#perPage: "{select} mục mỗi trang",#}
                             noRows: "Không có dữ liệu",
-                            {#info: "Trang {page} / {pages}"#}
                         }
                     });
+
+                    $('.delete-btn').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        const productUuid = $(this).data('uuid');
+
+                        Swal.fire({
+                            title: 'Bạn có chắc?',
+                            text: "Hành động này sẽ xóa sản phẩm và các tệp liên quan!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Đồng ý',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: `/product/api/products/admin/${productUuid}/delete/`,
+                                    type: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': getCookie('csrftoken')
+                                    },
+                                    success: function (response) {
+                                        if (response.status === 'success') {
+                                            Swal.fire('Thành công', response.message, 'success').then(() => {
+                                                loadProducts();
+                                            });
+                                        } else {
+                                            Swal.fire('Lỗi', response.message, 'error');
+                                        }
+                                    },
+                                    error: function (xhr) {
+                                        console.log(xhr.status, xhr.responseText); // Ghi log lỗi chi tiết
+                                        Swal.fire('Lỗi', `Không thể xóa sản phẩm: ${xhr.responseText}`, 'error');
+                                    }
+                                });
+                            }
+                        });
+                    });
                 },
-                error: function () {
-                    Swal.fire('Lỗi', 'Không thể tải danh sách sản phẩm.', 'error');
+                error: function (xhr) {
+                    console.log(xhr.status, xhr.responseText); // Ghi log lỗi chi tiết
+                    Swal.fire('Lỗi', `Không thể tải danh sách sản phẩm: ${xhr.responseText}`, 'error');
                 }
             });
         }
 
         $(document).ready(function () {
-            loadProducts();  // Gọi khi trang tải
+            // Thiết lập CSRF token cho tất cả các yêu cầu AJAX
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                }
+            });
+
+            loadProducts();
         });
-    </script>
-{% endblock %}
+    </script>{% endblock %}
