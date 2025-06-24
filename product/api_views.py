@@ -2,6 +2,7 @@ import json
 import random
 from uuid import uuid4
 
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -22,7 +23,7 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Categories, Product, Feedback
+from .models import *
 
 
 # region HNT Category
@@ -224,12 +225,134 @@ def product_list_api(request):
         # 'has_previous': current_page.has_previous(),
     }, safe=False)
 
+
+@login_required(login_url='account:signin')
+def admin_create_product_api_view(request):
+    if request.method == 'POST':
+        try:
+            # Lấy dữ liệu từ request.POST
+            product_name = request.POST.get('product_name')
+            categories_uuid = request.POST.get('categories')
+            desc = request.POST.get('desc')
+            price = int(request.POST.get('price_raw', 0))
+            sale_price = int(request.POST.get('sale_price_raw', 0))
+            stock_quantity = int(request.POST.get('stock_quantity', 1))
+            is_visible = request.POST.get('is_visible', 'true').lower() == 'true'
+
+            # Kiểm tra dữ liệu cơ bản
+            if not product_name or not categories_uuid or price < 0 or stock_quantity < 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Dữ liệu không hợp lệ'
+                }, status=400)
+
+            # Tạo sản phẩm mới
+            product = Product(
+                name=product_name,
+                # uuid=uuid.uuid4(),
+                categories_uuid=categories_uuid,
+                desc=desc,
+                price=price,
+                sale_price=sale_price,
+                stock_quantity=stock_quantity,
+                quantity=stock_quantity,
+                active=is_visible,
+                created_at=timezone.now(),
+                updated_at=timezone.now()
+            )
+            product.save()
+            print(request.FILES)
+            # Xử lý upload hình ảnh sản phẩm
+            if 'images' in request.FILES:
+                images = request.FILES.getlist('images')
+                for image in images:
+                    try:
+                        product_image = ProductImage(
+                            name=image.name,
+                            # uuid=uuid.uuid4(),  # Thêm uuid để tránh lỗi
+                            product_uuid=product.uuid,
+                            image=image,
+                            active=True,
+                            created_at=timezone.now(),
+                            updated_at=timezone.now()
+                        )
+                        product_image.save()
+                    except ValidationError as e:
+                        product.delete()  # Xóa sản phẩm nếu ảnh không hợp lệ
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f'Lỗi khi lưu ảnh: {str(e)}'
+                        }, status=400)
+                    except Exception as e:
+                        product.delete()  # Xóa sản phẩm nếu có lỗi khác
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f'Lỗi không xác định khi lưu ảnh: {str(e)}'
+                        }, status=500)
+
+            # Xử lý upload thumbnail
+            if 'thumbnail' in request.FILES:
+                thumbnail = request.FILES['thumbnail']
+                try:
+                    product_thumbnail = ProductThumbnail(
+                        name=thumbnail.name,
+                        # uuid=uuid.uuid4(),  # Thêm uuid để tránh lỗi
+                        product_uuid=product.uuid,
+                        thumbnail=thumbnail,
+                        active=True,
+                        created_at=timezone.now(),
+                        updated_at=timezone.now()
+                    )
+                    product_thumbnail.save()
+                except ValidationError as e:
+                    product.delete()  # Xóa sản phẩm nếu thumbnail không hợp lệ
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Lỗi khi lưu thumbnail: {str(e)}'
+                    }, status=400)
+                except Exception as e:
+                    product.delete()  # Xóa sản phẩm nếu có lỗi khác
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Lỗi không xác định khi lưu thumbnail: {str(e)}'
+                    }, status=500)
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Sản phẩm đã được tạo thành công',
+                'product': {
+                    'uuid': str(product.uuid),
+                    'name': product.name,
+                    'price': product.price,
+                    'sale_price': product.sale_price,
+                    'stock_quantity': product.stock_quantity,
+                    'active': product.active
+                }
+            }, status=201)
+
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Dữ liệu không hợp lệ: {str(e)}'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Lỗi server: {str(e)}'
+            }, status=500)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Phương thức không được hỗ trợ'
+    }, status=405)
+
 #### simple data table không hỗ trợ phân trang cả FE và BE nên phải list tất cả
-def admin_product_list_api(request):
+@login_required(login_url='account:signin')
+def admin_product_list_api_view(request):
     page = request.GET.get('page', 1)  # Mặc định là trang 1
     # per_page = 10  # 9 sản phẩm mỗi trang
 
-    products = Product.objects.filter(active=True).order_by('-created_at')
+    products = Product.objects.all().order_by('-created_at')
     # paginator = Paginator(products, per_page)
 
     # try:

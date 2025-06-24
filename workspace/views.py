@@ -37,7 +37,9 @@ def products_management_view(request):
 def create_products_management_view(request):
     context = {}
     context["breadscrumb"] = "Sản phẩm"
-    context["breadscrumb_url"] = reverse('workspace:products_management_view')
+    context["breadscrumb_url"] = reverse('workspace:create_products_management_view')
+    cats = Categories.objects.all()
+    context["cats"] = cats
     template = loader.get_template(str('workspace/mazer/create_products_mgmt.html'))
     return HttpResponse(template.render(context, request))
 

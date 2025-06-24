@@ -19,7 +19,8 @@ urlpatterns = [
     #### PRODUCT ####
 
     path('api/products/', api_views.product_list_api, name='product_list_api'),
-    path('api/products/admin/', api_views.admin_product_list_api, name='admin_product_list_api'),
+    path('api/products/admin/', api_views.admin_product_list_api_view, name='admin_product_list_api_view'),
+    path('api/products/admin/create/', api_views.admin_create_product_api_view, name='admin_create_product_api_view'),
     path('api/filter-products/', api_views.filter_products_api, name='filter_products_api'),
     path('api/related-products/<uuid:uuid>/', api_views.related_product_list_api_view, name='related-products'),
     path('search/', views.product_search_view, name='product_search_view'),
