@@ -15,6 +15,7 @@ urlpatterns = [
     #### Product management ####
     path('mgmt/products/', views.products_management_view, name='products_management_view'),
     path('mgmt/products/create/', views.create_products_management_view, name='create_products_management_view'),
+    path('mgmt/products/<product_uuid>/edit/', views.edit_products_management_view, name='edit_products_management_view'),
     path('mgmt/inventory/', views.inventory_management_view, name='inventory_management_view'),
 
     #### Order management ####

@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/products/admin/', api_views.admin_product_list_api_view, name='admin_product_list_api_view'),
     path('api/products/admin/create/', api_views.admin_create_product_api_view, name='admin_create_product_api_view'),
     path('api/products/admin/<product_uuid>/delete/', api_views.admin_delete_product_api_view, name='admin_delete_product_api_view'),
+    path('api/products/admin/<product_uuid>/edit/', api_views.admin_edit_product_api_view, name='admin_edit_product_api_view'),
     path('api/filter-products/', api_views.filter_products_api, name='filter_products_api'),
     path('api/related-products/<uuid:uuid>/', api_views.related_product_list_api_view, name='related-products'),
     path('search/', views.product_search_view, name='product_search_view'),

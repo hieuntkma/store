@@ -90,7 +90,7 @@
                         </td>
                         <td>${new Date(product.created_at).toLocaleDateString()}</td>
                         <td>
-                            <a href="#" class="text-primary me-2 edit-btn" data-uuid="${product.uuid}" title="Sửa">
+                            <a href="/workspace/mgmt/products/${product.uuid}/edit/" class="text-primary me-2 edit-btn" data-uuid="${product.uuid}" title="Sửa">
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
                             <a href="#" class="text-danger delete-btn" data-uuid="${product.uuid}" title="Xóa">
@@ -137,7 +137,7 @@
                                     success: function (response) {
                                         if (response.status === 'success') {
                                             Swal.fire('Thành công', response.message, 'success').then(() => {
-                                                loadProducts();
+                                                window.location.reload();
                                             });
                                         } else {
                                             Swal.fire('Lỗi', response.message, 'error');

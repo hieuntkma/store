@@ -348,6 +348,134 @@ def admin_create_product_api_view(request):
         'message': 'Phương thức không được hỗ trợ'
     }, status=405)
 
+@login_required(login_url='account:signin')
+@require_POST
+def admin_edit_product_api_view(request, product_uuid):
+    try:
+        # Lấy sản phẩm cần chỉnh sửa
+        try:
+            product = Product.objects.get(uuid=product_uuid)
+        except Product.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Sản phẩm không tồn tại'
+            }, status=404)
+
+        # Lấy dữ liệu từ form
+        product_name = request.POST.get('product_name')
+        categories_uuid = request.POST.get('categories_uuid')
+        desc = request.POST.get('desc')
+        price = int(request.POST.get('price', 0))
+        sale_price = int(request.POST.get('sale_price', 0))
+        stock_quantity = int(request.POST.get('stock_quantity', 1))
+        is_visible = request.POST.get('active', 'true').lower() == 'true'
+
+        # Kiểm tra dữ liệu hợp lệ
+        if not product_name or not categories_uuid or price < 0 or stock_quantity < 0:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Dữ liệu không hợp lệ. Vui lòng kiểm tra tên, danh mục, giá và số lượng.'
+            }, status=400)
+
+        # Kiểm tra danh mục tồn tại
+        try:
+            Categories.objects.get(uuid=categories_uuid, active=True)
+        except Categories.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Danh mục không tồn tại hoặc không hoạt động.'
+            }, status=400)
+
+        # Cập nhật thông tin sản phẩm
+        product.product_name = product_name
+        product.name = product_name
+        product.categories_uuid = categories_uuid
+        product.desc = desc
+        product.price = price
+        product.sale_price = sale_price
+        product.stock_quantity = stock_quantity
+        product.quantity = stock_quantity
+        product.active = is_visible
+        product.updated_at = timezone.now()
+        product.save()
+
+        # Xử lý xoá ảnh nếu có
+        deleted_image_uuids = request.POST.get('deleted_image_uuids', '[]')
+        try:
+            deleted_image_uuids = json.loads(deleted_image_uuids)
+            ProductImage.objects.filter(
+                uuid__in=[uid for uid in deleted_image_uuids],
+                product_uuid=product.uuid
+            ).delete()
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Danh sách ảnh bị xoá không hợp lệ.'
+            }, status=400)
+
+        # Xử lý ảnh mới
+        if 'images' in request.FILES:
+            for image in request.FILES.getlist('images'):
+                try:
+                    ProductImage.objects.create(
+                        name=image.name,
+                        product_uuid=product.uuid,
+                        image=image,
+                        active=True,
+                        created_at=timezone.now(),
+                        updated_at=timezone.now()
+                    )
+                except Exception as e:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Lỗi khi lưu ảnh: {str(e)}'
+                    }, status=500)
+
+        # Xử lý thumbnail mới
+        if 'thumbnail' in request.FILES:
+            try:
+                ProductThumbnail.objects.filter(product_uuid=product.uuid).delete()
+                ProductThumbnail.objects.create(
+                    name=request.FILES['thumbnail'].name,
+                    product_uuid=product.uuid,
+                    thumbnail=request.FILES['thumbnail'],
+                    active=True,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now()
+                )
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Lỗi khi lưu thumbnail: {str(e)}'
+                }, status=500)
+
+        # Trả kết quả thành công
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Sản phẩm đã được cập nhật thành công.',
+            'product': {
+                'uuid': str(product.uuid),
+                'name': product.name,
+                'price': product.price,
+                'sale_price': product.sale_price,
+                'stock_quantity': product.stock_quantity,
+                'active': product.active
+            }
+        }, status=200)
+
+    except ValueError as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Dữ liệu không hợp lệ: {str(e)}'
+        }, status=400)
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Đã xảy ra lỗi hệ thống: {str(e)}'
+        }, status=500)
+
+
 
 @login_required(login_url='account:signin')
 def admin_delete_product_api_view(request, product_uuid):

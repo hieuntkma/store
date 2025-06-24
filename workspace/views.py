@@ -45,6 +45,19 @@ def create_products_management_view(request):
 
 
 @login_required(login_url='account:signin_view')
+def edit_products_management_view(request, product_uuid):
+    context = {}
+    context["breadscrumb"] = "Sản phẩm"
+    context["breadscrumb_url"] = reverse('workspace:create_products_management_view')
+    cats = Categories.objects.all()
+    context["cats"] = cats
+    product = get_object_or_404(Product, uuid=product_uuid)
+    context["product"] = product
+    template = loader.get_template(str('workspace/mazer/edit_products_mgmt.html'))
+    return HttpResponse(template.render(context, request))
+
+
+@login_required(login_url='account:signin_view')
 def categories_management_view(request):
     context = {}
     context["breadscrumb"] = "Danh mục"
