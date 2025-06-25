@@ -1,0 +1,281 @@
+{% extends "store/mazer/admin_base.html" %}
+{% load static %}
+{% load tz %}
+{% load l10n %}
+{% load i18n %}
+{% load humanize %}
+
+{% block breadscrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Quản lý đơn hàng</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <section class="section">
+        <div class="card">
+            <div class="card-header">
+                Quản Lý Đơn Hàng
+            </div>
+            <div class="card-body">
+{#                <div>#}
+{#                    <a href="#" class="btn btn-success" id="create_category_btn">Thêm danh mục</a>#}
+{#                </div>#}
+                <table class="table" id="order_table">
+                    <thead>
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Người đặt</th>
+                        <th>Trạng thái thanh toán</th>
+                        <th>Trạng thái giao hàng</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="order_table_body">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Sửa danh mục -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCategoryLabel">Cập nhật danh mục</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_category_uuid">
+                    <input type="text" class="form-control mb-2" id="edit_category_name" placeholder="Tên danh mục">
+                    <textarea class="form-control" id="edit_category_desc" placeholder="Mô tả"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="update_category_btn">Cập nhật</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+    {#    #### create category ####}
+    <script>
+        // Lấy CSRF token từ cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // Mở modal khi nhấn nút
+        $('#create_category_btn').click(function (e) {
+            e.preventDefault();
+            $('#createCategoryModal').modal('show');
+        });
+
+        // Gửi request tạo danh mục
+        $('#submit_category_btn').click(function () {
+            const name = $('#category_name').val().trim();
+            const desc = $('#category_desc').val().trim();
+
+            if (!name) {
+                Swal.fire('Lỗi', 'Tên danh mục là bắt buộc.', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/product/api/categories/create/',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: name,
+                    desc: desc
+                }),
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function (response) {
+                    Swal.fire('Thành công', response.message, 'success').then(() => {
+                        $('#createCategoryModal').modal('hide');
+                        $('#category_name').val('');
+                        $('#category_desc').val('');
+
+                        window.location.reload();
+
+                    });
+                },
+                error: function (xhr) {
+                    const res = xhr.responseJSON;
+                    Swal.fire('Lỗi', res?.error || 'Đã có lỗi xảy ra.', 'error');
+                }
+            });
+        });
+    </script>
+    {##### list category ### #}
+    <script>
+        {##### edit cat #####}
+        $(document).on('click', '.edit-btn', function (e) {
+            e.preventDefault();
+            const uuid = $(this).data('uuid');
+
+            $.ajax({
+                url: `/product/api/categories/${uuid}/edit/`,
+                type: 'GET',
+                headers: {'X-CSRFToken': csrftoken},
+                success: function (data) {
+                    $('#edit_category_uuid').val(data.uuid);
+                    $('#edit_category_name').val(data.name);
+                    $('#edit_category_desc').val(data.desc);
+                    $('#editCategoryModal').modal('show');
+                },
+                error: function () {
+                    Swal.fire('Lỗi', 'Không thể tải thông tin danh mục.', 'error');
+                }
+            });
+        });
+
+        $('#update_category_btn').click(function () {
+            const uuid = $('#edit_category_uuid').val();
+            const name = $('#edit_category_name').val();
+            const desc = $('#edit_category_desc').val();
+
+            if (!name.trim()) {
+                Swal.fire('Lỗi', 'Tên danh mục không được để trống.', 'warning');
+                return;
+            }
+
+            $.ajax({
+                url: `/product/api/categories/${uuid}/edit/`,
+                type: 'PUT',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({name, desc}),
+                success: function (res) {
+                    $('#editCategoryModal').modal('hide');
+                    Swal.fire('Thành công', res.message, 'success').then(() => {
+                        window.location.reload();  // ✅ Reload sau khi người dùng bấm "OK"
+                    });
+                },
+                error: function (xhr) {
+                    let msg = xhr.responseJSON?.message || xhr.responseJSON?.error || 'Lỗi không xác định';
+                    Swal.fire('Lỗi', msg, 'error');
+                }
+            });
+        });
+        {#### end edit cat ####}
+        {##### delete cat #####}
+        $(document).on('click', '.delete-btn', function (e) {
+            e.preventDefault();
+            const uuid = $(this).data('uuid');
+
+            Swal.fire({
+                title: 'Bạn có chắc?',
+                text: "Bạn sẽ không thể hoàn tác thao tác này!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/product/api/categories/${uuid}/delete/`,
+                        type: 'POST',  // dùng POST nếu DELETE không tiện
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                        },
+                        success: function (res) {
+                            Swal.fire('Đã xóa!', res.message, 'success').then(() => {
+                                window.location.reload();  // ✅ Reload sau khi người dùng bấm "OK"
+                            });
+                        },
+                        error: function (xhr) {
+                            const msg = xhr.responseJSON?.error || 'Lỗi không xác định';
+                            Swal.fire('Lỗi', msg, 'error');
+                        }
+                    });
+                }
+            });
+        });
+        {#### end delete cat ####}
+
+        function loadOrders() {
+            $.ajax({
+                url: '/order/api/v1/orders/admin/',
+                type: 'GET',
+                headers: {},
+                success: function (response) {
+                    const tbody = $('#order_table_body');
+                    tbody.empty();
+                    let stt = 1;
+                    response.orders.forEach(order => {
+                        const row = `
+                        <tr>
+                            <td>${order.uuid}</td>
+                            <td>${order.name}</td>
+                            <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                            <td>${order.user}</td>
+                            <td>${order.payment_status}</td>
+                            <td>${order.shipping_status}</td>
+                            <td>
+                                <a href="#" class="text-primary me-2 edit-btn" data-uuid="${order.uuid}" title="Sửa">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a href="#" class="text-danger delete-btn" data-uuid="${order.uuid}" title="Xóa">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </td>
+                        </tr>`;
+                        tbody.append(row);
+                    });
+
+                    // Khởi tạo hoặc làm mới simpleDatatables
+                    if (window.myDataTable) {
+                        window.myDataTable.destroy();
+                    }
+                    window.myDataTable = new simpleDatatables.DataTable("#order_table", {
+                        perPage: 5,
+                        labels: {
+                            placeholder: "Tìm kiếm...",
+                            {#perPage: "{select} mục mỗi trang",#}
+                            noRows: "Không có dữ liệu",
+                            {#info: "Trang {page} / {pages}"#}
+                        }
+                    });
+                },
+                error: function () {
+                    Swal.fire('Lỗi', 'Không thể tải danh mục.', 'error');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            loadOrders();  // Gọi khi trang tải
+        });
+    </script>
+{% endblock %}

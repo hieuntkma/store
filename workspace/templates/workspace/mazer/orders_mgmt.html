@@ -10,7 +10,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a></li>
             <li class="breadcrumb-item"><a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Danh Mục Sản Phẩm</li>
+            <li class="breadcrumb-item active" aria-current="page">Quản lý đơn hàng</li>
         </ol>
     </nav>
 {% endblock %}
@@ -19,23 +19,24 @@
     <section class="section">
         <div class="card">
             <div class="card-header">
-                Danh Mục Sản Phẩm
+                Quản Lý Đơn Hàng
             </div>
             <div class="card-body">
-                <div>
-                    <a href="#" class="btn btn-success" id="create_category_btn">Thêm danh mục</a>
-                </div>
-                <table class="table" id="category_table">
+                {#                <div>#}
+                {#                    <a href="#" class="btn btn-success" id="create_category_btn">Thêm danh mục</a>#}
+                {#                </div>#}
+                <table class="table" id="order_table">
                     <thead>
                     <tr>
-                        <th>STT</th>
-                        <th>Danh Mục</th>
-                        <th>Mô tả</th>
-                        <th>Ngày tạo</th>
-                        <th>Thao tác</th>
+                        <th>Mã đơn hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Người đặt</th>
+                        <th>Trạng thái thanh toán</th>
+                        <th>Trạng thái giao hàng</th>
+                        <th>Cập nhật trạng thái</th>
                     </tr>
                     </thead>
-                    <tbody id="category_table_body">
+                    <tbody id="order_table_body">
 
                     </tbody>
                 </table>
@@ -43,25 +44,6 @@
         </div>
     </section>
 
-    <!-- Modal thêm danh mục -->
-    <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createCategoryLabel">Thêm danh mục</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" class="form-control mb-2" id="category_name" placeholder="Tên danh mục">
-                    <textarea class="form-control" id="category_desc" placeholder="Mô tả"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="submit_category_btn">Tạo</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- Modal Sửa danh mục -->
     <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryLabel"
          aria-hidden="true">
@@ -82,7 +64,22 @@
             </div>
         </div>
     </div>
-
+    <!-- Modal: Chi tiết đơn hàng -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailLabel">Chi tiết đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="order-detail-content">
+                        <p>Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -242,56 +239,192 @@
         });
         {#### end delete cat ####}
 
-        function loadCategories() {
+        function loadOrders() {
             $.ajax({
-                url: '/product/api/categories/admin',
-                type: 'GET',
-                headers: {},
-                success: function (response) {
-                    const tbody = $('#category_table_body');
-                    tbody.empty();
-                    let stt = 1;
-                    response.results.forEach(cat => {
-                        const row = `
-                        <tr>
-                            <td>${stt++}</td>
-                            <td>${cat.name}</td>
-                            <td>${cat.desc || ''}</td>
-                            <td>${new Date(cat.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <a href="#" class="text-primary me-2 edit-btn" data-uuid="${cat.uuid}" title="Sửa">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
-                                <a href="#" class="text-danger delete-btn" data-uuid="${cat.uuid}" title="Xóa">
-                                    <i class="bi bi-trash-fill"></i>
-                                </a>
-                            </td>
-                        </tr>`;
-                        tbody.append(row);
-                    });
+                    url: '/order/api/v1/orders/admin/',
+                    type: 'GET',
+                    headers: {},
+                    success: function (response) {
+                        const tbody = $('#order_table_body');
+                        tbody.empty();
+                        let stt = 1;
+                        response.orders.forEach(order => {
+                            const paymentStatusText = order.payment_status
+                            const paymentColor = paymentStatusText === 'Đã thanh toán' ? 'bg-success' : 'bg-danger';
 
-                    // Khởi tạo hoặc làm mới simpleDatatables
-                    if (window.myDataTable) {
-                        window.myDataTable.destroy();
-                    }
-                    window.myDataTable = new simpleDatatables.DataTable("#category_table", {
-                        perPage: 5,
-                        labels: {
-                            placeholder: "Tìm kiếm...",
-                            {#perPage: "{select} mục mỗi trang",#}
-                            noRows: "Không có dữ liệu",
-                            {#info: "Trang {page} / {pages}"#}
+                            // Xác định trạng thái giao hàng + màu sắc tương ứng
+                            let statusText = '';
+                            let statusColor = '';
+                            switch (order.shipping_status) {
+                                case "Chờ xử lý":
+                                    statusText = "Chờ xử lý";
+                                    statusColor = "bg-light text-dark";
+                                    break;
+                                case "Đã xác nhận":
+                                    statusText = "Đã xác nhận";
+                                    statusColor = "bg-info";
+                                    break;
+                                case "Đang giao hàng":
+                                    statusText = "Đang giao hàng";
+                                    statusColor = "bg-warning text-dark";
+                                    break;
+                                case "Đã nhận hàng":
+                                    statusText = "Đã nhận hàng";
+                                    statusColor = "bg-success";
+                                    break;
+                                case "Đã hủy":
+                                    statusText = "Đã hủy";
+                                    statusColor = "bg-danger";
+                                    break;
+                                default:
+                                    statusText = "Không xác định";
+                                    statusColor = "bg-secondary";
+                            }
+
+                            const row = `
+                                        <tr>
+                                            <td>
+                                                <a href="#" class="order-detail-link" data-uuid="${order.uuid}">
+                                                    #${order.uuid.substring(0, 7)}
+                                                </a>
+                                            </td>
+                                            <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                                            <td>${order.user}</td>
+                                            <td><span class="badge ${paymentColor}">${paymentStatusText}</span></td>
+                                            <td><span class="badge ${statusColor}">${statusText}</span></td>
+                                            <td>
+                                                <select class="form-select shipping-status" data-uuid="${order.uuid}" data-type="shipping_status">
+                                                    <option value="pending" ${order.shipping_status === 'Chờ xử lý' ? 'selected' : ''}>Chờ xử lý</option>
+                                                    <option value="confirmed" ${order.shipping_status === 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận</option>
+                                                    <option value="shipping" ${order.shipping_status === 'Đang giao hàng' ? 'selected' : ''}>Đang giao hàng</option>
+                                                    <option value="delivered" ${order.shipping_status === 'Đã nhận hàng' ? 'selected' : ''}>Đã nhận hàng</option>
+                                                    <option value="cancelled" ${order.shipping_status === 'Đã hủy' ? 'selected' : ''}>Đã hủy</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    `;
+                            tbody.append(row);
+                        });
+                        // Khởi tạo hoặc làm mới simpleDatatables
+                        if (window.myDataTable) {
+                            window.myDataTable.destroy();
                         }
-                    });
-                },
-                error: function () {
-                    Swal.fire('Lỗi', 'Không thể tải danh mục.', 'error');
+                        window.myDataTable = new simpleDatatables.DataTable("#order_table", {
+                            perPage: 5,
+                            labels: {
+                                placeholder: "Tìm kiếm...",
+                                {#perPage: "{select} mục mỗi trang",#}
+                                noRows: "Không có dữ liệu",
+                                {#info: "Trang {page} / {pages}"#}
+                            }
+                        });
+                        // Xử lý thay đổi trạng thái
+                        $('.payment-status, .shipping-status').on('change', function () {
+                            const uuid = $(this).data('uuid');
+                            const type = $(this).data('type');
+                            const value = $(this).val();
+
+                            $.ajax({
+                                url: `/order/api/v1/orders/admin/${uuid}/update-status/`,
+                                type: 'POST',
+                                headers: {
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                },
+                                data: {
+                                    type: type,
+                                    status: value
+                                },
+                                success: function (response) {
+                                    if (response.status === 'success') {
+                                        Swal.fire('Thành công', response.message, 'success').then(() => {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire('Lỗi', response.message, 'error');
+                                    }
+                                },
+                                error: function (xhr) {
+                                    Swal.fire('Lỗi', 'Không thể cập nhật trạng thái.', 'error');
+                                    console.error(xhr.responseText);
+                                }
+                            });
+                        });
+
+                        //hiển thị chi tiết order
+                        $(document).on('click', '.order-detail-link', function (e) {
+                            e.preventDefault();
+                            const uuid = $(this).data('uuid');
+
+                            $.ajax({
+                                url: `/order/api/v1/orders/admin/${uuid}/detail/`,
+                                type: 'GET',
+                                headers: {
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                },
+                                success: function (response) {
+                                    const data = response.data;
+                                    // Tạo nội dung cho modal
+                                    const orderDetailContent = `
+                                        <h6>Thông tin đơn hàng</h6>
+                                        <p><strong>Mã đơn hàng:</strong> ${data.code}</p>
+                                        <p><strong>Trạng thái:</strong> ${data.status}</p>
+                                        <p><strong>Thanh toán:</strong> ${data.payment_status}</p>
+                                        <p><strong>Tổng tiền:</strong> ${data.total_price.toLocaleString()} VNĐ</p>
+                                        <p><strong>Phí vận chuyển:</strong> ${data.shipping_price.toLocaleString()} VNĐ</p>
+                                        <p><strong>Ngày đặt:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+
+                                        <h6 class="mt-3">Thông tin người nhận</h6>
+                                        <p><strong>Tên người nhận:</strong> ${data.recipient_name}</p>
+                                        <p><strong>Địa chỉ:</strong> ${data.delivery_address}</p>
+                                        <p><strong>Số điện thoại:</strong> ${data.recipient_phone}</p>
+                                        <p><strong>Email:</strong> ${data.recipient_email}</p>
+                                        <p><strong>Ghi chú:</strong> ${data.note || 'Không có'}</p>
+
+                                        <h6 class="mt-3">Danh sách sản phẩm</h6>
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Hình ảnh</th>
+                                                    <th>Tên sản phẩm</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Đơn giá</th>
+                                                    <th>Tổng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${data.items.map(item => `
+                                                    <tr>
+                                                        <td><img src="${item.thumbnail}" alt="${item.product_name}" style="width: 50px; height: 50px;"></td>
+                                                        <td>${item.product_name}</td>
+                                                        <td>${item.quantity}</td>
+                                                        <td>${item.unit_price.toLocaleString()} VNĐ</td>
+                                                        <td>${item.total.toLocaleString()} VNĐ</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    `;
+                                    // Cập nhật nội dung modal và hiển thị
+                                    $('#order-detail-content').html(orderDetailContent);
+                                    $('#orderDetailModal').modal('show');
+                                },
+                                error: function (xhr) {
+                                    const errorMsg = xhr.responseJSON?.error || 'Lỗi khi tải chi tiết đơn hàng.';
+                                    Swal.fire('Lỗi', errorMsg, 'error');
+                                }
+                            });
+                        });
+                    },
+                    error: function () {
+                        Swal.fire('Lỗi', 'Không thể tải danh mục.', 'error');
+                    }
                 }
-            });
+            )
+            ;
         }
 
         $(document).ready(function () {
-            loadCategories();  // Gọi khi trang tải
+            loadOrders();  // Gọi khi trang tải
         });
     </script>
 {% endblock %}

@@ -83,7 +83,7 @@ def orders_management_view(request):
     context["breadscrumb"] = "Đơn hàng"
     context["breadscrumb_url"] = reverse('workspace:orders_management_view')
 
-    template = loader.get_template(str('workspace/mazer/categories_mgmt.html'))
+    template = loader.get_template(str('workspace/mazer/orders_mgmt.html'))
     return HttpResponse(template.render(context, request))
 
 
