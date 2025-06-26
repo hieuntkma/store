@@ -24,3 +24,4 @@ urlpatterns = [
     #### User management ####
     path('mgmt/users/', views.users_management_view, name='users_management_view'),
 ]
+

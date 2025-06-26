@@ -92,6 +92,7 @@ def users_management_view(request):
     context = {}
     context["breadscrumb"] = "Người dùng"
     context["breadscrumb_url"] = reverse('workspace:users_management_view')
+    users = Account.objects.all()
 
-    template = loader.get_template(str('workspace/mazer/categories_mgmt.html'))
+    template = loader.get_template(str('workspace/mazer/users_mgmt.html'))
     return HttpResponse(template.render(context, request))
