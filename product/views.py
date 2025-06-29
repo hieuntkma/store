@@ -13,19 +13,16 @@ from order.models import Order  # dùng để kiểm tra đơn hàng nếu cần
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now as djnow
 from .models import *
-
+from django.db.models import Avg
 
 # Create your views here.
 
 
 def shop_detail_view(request, uuid):
-    context = {}
     product = get_object_or_404(Product, uuid=uuid, active=True)
 
-    # related_products = Product.objects.filter(
-    #     categories_uuid=product.categories_uuid,
-    #     active=True
-    # ).exclude(uuid=product.uuid).order_by('-created_at')[:8]
+    feedbacks = Feedback.objects.filter(product_uuid=uuid, active=True).order_by('-created_at')
+    average_rating = feedbacks.aggregate(avg=Avg('rating'))['avg'] or 0
 
     context = {
         'product': {
@@ -44,10 +41,12 @@ def shop_detail_view(request, uuid):
             'created_at': product.created_at,
             'updated_at': product.updated_at,
         },
-        # 'related_products': related_products,
+        'feedbacks': feedbacks,
+        'average_rating': round(average_rating, 1)
     }
 
     return render(request, 'product/fruitable/shop-detail.html', context)
+
 
 
 def shop_view(request):
@@ -85,15 +84,17 @@ def feedback_view(request):
         comment = request.POST.get("comment")
         feedback_image = request.FILES.get("feedback_image")
 
+        # Nếu thiếu thông tin → quay lại trang hiện tại với mã đơn
         if not (product_uuid and order_uuid and rating):
             messages.error(request, "Vui lòng nhập đầy đủ thông tin bắt buộc.")
-            return redirect('feedback_view')
+            return redirect(f'/product/feedback/?order={order_uuid}')
 
-        # (tùy chọn) kiểm tra đơn hàng có thuộc user không
+        # Kiểm tra đơn có thuộc user hay không
         if not Order.objects.filter(uuid=order_uuid, account_uuid=request.user.uuid).exists():
             messages.error(request, "Không tìm thấy đơn hàng tương ứng.")
-            return redirect('feedback_view')
+            return redirect('account:order_list_view')
 
+        # Tạo feedback
         Feedback.objects.create(
             name=f"Feedback của {request.user}",
             uuid=uuid4(),
@@ -108,8 +109,18 @@ def feedback_view(request):
         )
 
         messages.success(request, "Đánh giá đã được gửi thành công!")
-        return redirect('feedback_view')
+        return redirect(f'/product/feedback/?order={order_uuid}')
 
-    return render(request, 'product/fruitable/feedback.html')
+    # ❗ Đây là xử lý GET: người dùng vừa truy cập /product/feedback/?order=...
+    order_uuid = request.GET.get("order")
+    if not order_uuid:
+        # Nếu người dùng gõ URL trực tiếp sai → báo lỗi
+        messages.error(request, "Thiếu thông tin đơn hàng để hiển thị đánh giá.")
+        return redirect('account:order_list_view')
+
+    # ✅ Truyền order_uuid sang template
+    return render(request, 'product/fruitable/feedback.html', {
+        "order_uuid": order_uuid
+    })
 
 

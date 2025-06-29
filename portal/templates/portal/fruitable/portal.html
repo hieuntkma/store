@@ -244,62 +244,26 @@
 
 
     <!-- Vesitable Shop Start-->
-    <div class="container-fluid vesitable">
-        <div class="container">
-            <div class="text-center mb-2">
-                <h1 class="section-title">RAU CỦ TƯƠI</h1>
-                <div class="section-icon my-3 d-flex justify-content-center align-items-center gap-2">
-                    <hr class="line"/>
-                    <img src="{% static 'store/fruitable/assets/img2/icon-green.png' %}" alt="icon"
-                         style="height: 24px;">
-                    <hr class="line"/>
-                </div>
-                <div class="owl-carousel vegetable-carousel justify-content-center">
-                    <div class="border border-primary rounded position-relative vesitable-item">
-                        <!-- Ảnh -->
-                        <div class="vesitable-img">
-                            <img src="{{ sp.get_thumbnail }}" class="img-fluid w-100 rounded-top"
-                                 alt="{{ sp.product_name }}">
-                        </div>
+    <!-- Vesitable Shop Start-->
+<div class="container-fluid vesitable">
+    <div class="container">
+        <div class="text-center mb-2">
+            <h1 class="section-title">RAU CỦ TƯƠI</h1>
+            <div class="section-icon my-3 d-flex justify-content-center align-items-center gap-2">
+                <hr class="line"/>
+                <img src="{% static 'store/fruitable/assets/img2/icon-green.png' %}" alt="icon" style="height: 24px;">
+                <hr class="line"/>
+            </div>
 
-                        <!-- Danh mục -->
-                        <div class="text-white bg-primary px-3 py-1 rounded position-absolute"
-                             style="top: 10px; left: 10px;">
-                            {{ sp.get_categories }}
-                        </div>
-
-                        <!-- Thông tin + hành động -->
-                        <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
-                            <!-- Tên sản phẩm -->
-                            <h6 class="fw-semibold mb-3 text-dark text-center product-name"
-                                title="{{ sp.product_name }}"
-                                style="font-size: 1rem; line-height: 1.4; height: 2.8em; overflow: hidden; text-overflow: ellipsis;">
-                                {{ sp.product_name }}
-                            </h6>
-
-                            <!-- Giá -->
-                            <div class="price-area text-center mb-3">
-                                <span class="text-success fw-bold me-2" style="font-size: 1.1rem;">
-                                    {{ sp.sale_price|intcomma }}₫
-                                </span>
-                                <del class="text-muted small" style="font-size: 0.9rem;">
-                                    {{ sp.price|intcomma }}₫
-                                </del>
-                            </div>
-
-                            <!-- Nút hành động -->
-                            <div class="d-flex flex-column align-items-center gap-2 mt-auto">
-                                <a href="#"
-                                   class="btn border border-secondary rounded-pill px-3 text-primary">
-                                    <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- ❗️CHỈ ĐỂ DIV TRỐNG để JS render -->
+            <div class="owl-carousel vegetable-carousel justify-content-center">
+                <!-- Nội dung sẽ được thêm bằng JS -->
             </div>
         </div>
     </div>
+</div>
+<!-- Vesitable Shop End-->
+
     <!-- Vesitable Shop End -->
 
 

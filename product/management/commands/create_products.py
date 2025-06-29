@@ -7,11 +7,11 @@ from product.models import Product, ProductImage, ProductThumbnail
 
 # Map tên danh mục sang UUID có sẵn
 CATEGORY_UUID_MAP = {
-    "Thịt tươi sống": "3adb4434-73fc-4165-971c-6f95c5ea223f",
-    "Các loại hạt": "26491d99-aaf0-4333-a57a-0beaeb4f28d8",
-    "Hải sản": "afd6cf83-e32f-4246-b390-f3916795a416",
-    "Hoa quả": "2f741aab-0cdf-4123-a46f-0caef9631883",
-    "Rau củ": "ba228fc0-4b0f-4c24-af14-edb373074da6"
+    "Thịt tươi sống": "258e7a0c-b178-4290-b5a6-1c7794782595",
+    "Các loại hạt": "39e78c7d-0601-4ed8-b64f-2dfe6019d814",
+    "Hải sản": "d520b696-409c-4a07-8ed3-2a2fccc65435",
+    "Hoa quả": "8f259049-27b7-4c19-878b-db7187cfe533",
+    "Rau củ": "558dc39e-dec5-4cf3-83b1-c62a4247ff60"
 }
 
 class Command(BaseCommand):

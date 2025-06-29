@@ -174,7 +174,7 @@ class Feedback(models.Model):
                                     editable=True)
     order_uuid = models.UUIDField(default=UUID4,
                                   max_length=64,
-                                  unique=True,
+                                  unique=False,
                                   editable=True)
     comment = models.TextField(blank=True,
                                null=True,
@@ -201,7 +201,8 @@ class Feedback(models.Model):
     def save(self, *args, **kwargs):
         self.updated_at = djnow()
         super().save(*args, **kwargs)
-
+class Meta:
+    unique_together = ("order_uuid", "product_uuid")
 
 # from django.db.models.signals import post_save
 # from django.dispatch import receiver

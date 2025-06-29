@@ -1,0 +1,150 @@
+{% extends 'store/fruitable/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="container py-5">
+    <h3 class="text-center mb-4">Đánh giá sản phẩm trong đơn hàng</h3>
+
+    <div id="order-info" class="mb-4">
+        <p><strong>Mã đơn hàng:</strong> <span id="order-code">Đang tải...</span></p>
+    </div>
+
+    <div id="product-list" class="row g-4">
+        <!-- Danh sách sản phẩm sẽ render bằng JavaScript -->
+    </div>
+</div>
+
+<!-- Modal đánh giá -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="feedback-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Đánh giá sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="product_uuid" id="feedback-product-uuid">
+                    <input type="hidden" name="order_uuid" id="feedback-order-uuid">
+
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Số sao đánh giá</label>
+                        <select name="rating" id="rating" class="form-select" required>
+                            <option value="">Chọn số sao</option>
+                            {% for i in "12345" %}
+                                <option value="{{ i }}">{{ i }} sao</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Nhận xét</label>
+                        <textarea name="comment" id="comment" rows="3" class="form-control" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="feedback_image" class="form-label">Hình ảnh (tuỳ chọn)</label>
+                        <input type="file" name="feedback_image" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal xem lại đánh giá -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content p-3">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông tin đánh giá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body" id="review-content">
+                <!-- nội dung sẽ được gán bằng JS -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const orderUuid = new URLSearchParams(window.location.search).get("order");
+    const productListContainer = document.getElementById("product-list");
+    const orderCodeEl = document.getElementById("order-code");
+
+    function fetchOrderDetail() {
+        fetch(`/order/api/v1/get-orders-detail/${orderUuid}/`)
+            .then(res => res.json())
+            .then(data => {
+                const order = data.data;
+                orderCodeEl.textContent = "#" + order.uuid.slice(0, 8);
+                renderProducts(order.items);
+                document.getElementById("feedback-order-uuid").value = order.uuid;
+            })
+            .catch(err => {
+                productListContainer.innerHTML = '<div class="alert alert-danger">Lỗi khi tải thông tin đơn hàng.</div>';
+            });
+    }
+
+    function renderProducts(products) {
+        productListContainer.innerHTML = "";
+
+        products.forEach(item => {
+            const col = document.createElement("div");
+            col.className = "col-md-6 col-lg-4";
+
+            let actionHtml = '';
+            if (item.already_reviewed) {
+                actionHtml = `
+                    <button class="btn btn-secondary mt-auto" disabled>Đã đánh giá</button>
+                    <button class="btn btn-outline-info mt-2" onclick='showReview(${JSON.stringify(item.review)})'>Xem đánh giá</button>
+                `;
+            } else {
+                actionHtml = `
+                    <button class="btn btn-outline-success mt-auto" onclick="openFeedbackForm('${item.product_uuid}')">Đánh giá</button>
+                `;
+            }
+
+            col.innerHTML = `
+                <div class="card h-100">
+                    <img src="${item.thumbnail}" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h5 class="card-title">${item.product_name}</h5>
+                        <p class="text-muted">${item.unit_price.toLocaleString()}₫ × ${item.quantity}</p>
+                        ${actionHtml}
+                    </div>
+                </div>
+            `;
+            productListContainer.appendChild(col);
+        });
+    }
+
+    function openFeedbackForm(productUuid) {
+        document.getElementById("feedback-product-uuid").value = productUuid;
+        document.getElementById("feedback-form").reset();
+        const modal = new bootstrap.Modal(document.getElementById("feedbackModal"));
+        modal.show();
+    }
+
+    function showReview(review) {
+        const content = document.getElementById("review-content");
+        content.innerHTML = `
+            <p><strong>Số sao:</strong> ${review.rating} ⭐</p>
+            <p><strong>Nhận xét:</strong> ${review.comment || "Không có nhận xét"}</p>
+            ${review.feedback_image ? `<p><img src="${review.feedback_image}" class="img-fluid rounded" /></p>` : ''}
+        `;
+        const modal = new bootstrap.Modal(document.getElementById("reviewModal"));
+        modal.show();
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchOrderDetail);
+</script>
+{% endblock %}
