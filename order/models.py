@@ -4,6 +4,7 @@ from django.utils.timezone import now as djnow
 from django.db.models import Sum
 
 from product.models import *
+from account.models import *
 
 
 # Create your models here.
@@ -59,6 +60,18 @@ class Order(models.Model):
         self.updated_at = djnow()
         super().save(*args, **kwargs)
 
+    def get_order_items(self):
+        order_items = OrderItem.objects.filter(order_id=self.uuid)
+        return order_items
+
+    def get_user_name(self):
+        user = Account.objects.filter(uuid=self.account_uuid).first()
+        return user.username
+
+    def get_bill(self):
+        bill = Bill.objects.filter(order_id=self.uuid).first()
+        return bill
+
 
 class OrderItem(models.Model):
     name = models.CharField(max_length=128,
@@ -109,27 +122,6 @@ class OrderItem(models.Model):
         except Exception as xx:
             print(xx)
             return None
-
-    # def get_best_seller_products(self, limit=None):
-    #     """
-    #     Trả về danh sách gồm các product_uuid và tổng số lượng đã bán
-    #     (chỉ tính các đơn hàng đã giao thành công), sắp xếp từ cao đến thấp.
-    #     """
-    #     from django.db.models import Sum
-    #     best_sellers = (
-    #         OrderItem.objects.filter(
-    #             active=True,
-    #             order_uuid__in=Order.objects.filter(status='delivered', active=True).values('uuid')
-    #         )
-    #         .values('product_uuid')
-    #         .annotate(total_quantity=Sum('quantity'))
-    #         .order_by('-total_quantity')
-    #     )
-    #
-    #     if limit:
-    #         best_sellers = best_sellers[:limit]
-    #
-    #     return list(best_sellers)
 
 
 class Bill(models.Model):

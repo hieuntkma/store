@@ -1,7 +1,9 @@
 import json
+import os
 import random
 from uuid import uuid4
 
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -13,6 +15,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+from django.utils.timezone import now as djnow
 
 import datetime
 
@@ -21,7 +24,42 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Categories, Product, Feedback
+from .models import *
+
+
+# region HNT Category
+@login_required(login_url='account:signin')
+def create_category_api_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            name = data.get("name")
+            desc = data.get("desc", "")
+
+            if not name:
+                return JsonResponse({"error": "Tên danh mục là bắt buộc."}, status=400)
+
+            category = Categories.objects.create(
+                name=name,
+                desc=desc,
+                active=True,
+                created_at=djnow()
+            )
+
+            return JsonResponse({
+                "success": True,
+                "message": "Tạo danh mục thành công.",
+                "data": {
+                    "uuid": str(category.uuid),
+                    "name": category.name,
+                    "desc": category.desc,
+                    "created_at": category.created_at,
+                }
+            }, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Dữ liệu không hợp lệ (không phải JSON)."}, status=400)
 
 
 def category_list_api_view(request):
@@ -41,20 +79,129 @@ def category_list_api_view(request):
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
+@login_required(login_url='account:signin')
+def admin_category_list_api_view(request):
+    if request.method == "GET":
+        page = request.GET.get("page", 1)
+        # per_page = request.GET.get("per_page", 10)  # lấy từ query param
+        # try:
+        #     per_page = int(per_page)
+        # except ValueError:
+        #     per_page = 10
+        categories = Categories.objects.filter(active=True).order_by("-created_at")
+        # paginator = Paginator(categories, per_page)
+
+        # try:
+        #     current_page = paginator.page(page)
+        # except Exception:
+        #     return JsonResponse({"error": "Trang không tồn tại."}, status=404)
+
+        data = [
+            {
+                "uuid": str(cat.uuid),
+                "name": cat.name,
+                "desc": cat.desc,
+                "created_at": cat.created_at
+            }
+            # for cat in current_page
+            for cat in categories
+        ]
+
+        return JsonResponse({
+            "results": data,
+            # "total_pages": paginator.num_pages,
+            # "current_page": current_page.number,
+            # "has_next": current_page.has_next(),
+            # "has_previous": current_page.has_previous(),
+        }, safe=False)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required(login_url='account:signin')
+def edit_category_api_view(request, cat_uuid):
+    try:
+        category = Categories.objects.get(uuid=cat_uuid)
+    except Categories.DoesNotExist:
+        return JsonResponse({"error": "Không tìm thấy danh mục."}, status=404)
+
+    if request.method == "GET":
+        data = {
+            "uuid": str(category.uuid),
+            "name": category.name,
+            "desc": category.desc,
+            "created_at": category.created_at,
+        }
+        return JsonResponse(data)
+
+    elif request.method in ["PUT", "POST"]:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Dữ liệu không hợp lệ."}, status=400)
+
+        name = data.get("name")
+        desc = data.get("desc")
+
+        if not name:
+            return JsonResponse({"error": "Tên danh mục là bắt buộc."}, status=400)
+
+        # Kiểm tra trùng tên với danh mục khác
+        if Categories.objects.filter(name=name).exclude(uuid=cat_uuid).exists():
+            return JsonResponse({"error": "Danh mục đã tồn tại."}, status=400)
+
+        category.name = name
+        category.desc = desc or ""
+        category.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Cập nhật danh mục thành công.",
+            "data": {
+                "uuid": str(category.uuid),
+                "name": category.name,
+                "desc": category.desc,
+                "updated_at": category.updated_at
+            }
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required(login_url='account:signin')
+def delete_category_api_view(request, cat_uuid):
+    if request.method in ["POST", "DELETE"]:  # Cho phép cả POST nếu bạn không dùng AJAX DELETE
+        try:
+            category = Categories.objects.get(uuid=cat_uuid, active=True)
+        except Categories.DoesNotExist:
+            return JsonResponse({"error": "Danh mục không tồn tại."}, status=404)
+
+        category.delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Đã xóa danh mục: {category.name}"
+        }, status=200)
+
+    return JsonResponse({"error": "Phương thức không được hỗ trợ."}, status=405)
+
+
+# region HNT Product
 def product_list_api(request):
     page = request.GET.get('page', 1)  # Mặc định là trang 1
-    per_page = 9  # 9 sản phẩm mỗi trang
+    # per_page = 9  # 9 sản phẩm mỗi trang
 
     products = Product.objects.filter(active=True).order_by('-created_at')
-    paginator = Paginator(products, per_page)
+    # paginator = Paginator(products, per_page)
 
-    try:
-        current_page = paginator.page(page)
-    except Exception:
-        return JsonResponse({'error': 'Trang không tồn tại'}, status=404)
+    # try:
+    #     current_page = paginator.page(page)
+    # except Exception:
+    #     return JsonResponse({'error': 'Trang không tồn tại'}, status=404)
 
     data = []
-    for product in current_page:
+    # for product in current_page:
+    for product in products:
         data.append({
             'uuid': str(product.uuid),
             'name': product.name,
@@ -68,14 +215,356 @@ def product_list_api(request):
             'categories': product.get_categories(),
             'created_at': product.created_at,
             'updated_at': product.updated_at,
+            'status': product.active
         })
 
     return JsonResponse({
         'results': data,
-        'total_pages': paginator.num_pages,
-        'current_page': current_page.number,
-        'has_next': current_page.has_next(),
-        'has_previous': current_page.has_previous(),
+        # 'total_pages': paginator.num_pages,
+        # 'current_page': current_page.number,
+        # 'has_next': current_page.has_next(),
+        # 'has_previous': current_page.has_previous(),
+    }, safe=False)
+
+
+@login_required(login_url='account:signin')
+def admin_create_product_api_view(request):
+    if request.method == 'POST':
+        try:
+            # Lấy dữ liệu từ request.POST
+            product_name = request.POST.get('product_name')
+            categories_uuid = request.POST.get('categories')
+            desc = request.POST.get('desc')
+            price = int(request.POST.get('price_raw', 0))
+            sale_price = int(request.POST.get('sale_price_raw', 0))
+            stock_quantity = int(request.POST.get('stock_quantity', 1))
+            is_visible = request.POST.get('is_visible', 'true').lower() == 'true'
+
+            # Kiểm tra dữ liệu cơ bản
+            if not product_name or not categories_uuid or price < 0 or stock_quantity < 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Dữ liệu không hợp lệ'
+                }, status=400)
+
+            # Tạo sản phẩm mới
+            product = Product(
+                product_name=product_name,
+                name=product_name,
+                # uuid=uuid.uuid4(),
+                categories_uuid=categories_uuid,
+                desc=desc,
+                price=price,
+                sale_price=sale_price,
+                stock_quantity=stock_quantity,
+                quantity=stock_quantity,
+                active=is_visible,
+                created_at=timezone.now(),
+                updated_at=timezone.now()
+            )
+            product.save()
+            print(request.FILES)
+            # Xử lý upload hình ảnh sản phẩm
+            if 'images' in request.FILES:
+                images = request.FILES.getlist('images')
+                for image in images:
+                    try:
+                        product_image = ProductImage(
+                            name=image.name,
+                            # uuid=uuid.uuid4(),  # Thêm uuid để tránh lỗi
+                            product_uuid=product.uuid,
+                            image=image,
+                            active=True,
+                            created_at=timezone.now(),
+                            updated_at=timezone.now()
+                        )
+                        product_image.save()
+                    except ValidationError as e:
+                        product.delete()  # Xóa sản phẩm nếu ảnh không hợp lệ
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f'Lỗi khi lưu ảnh: {str(e)}'
+                        }, status=400)
+                    except Exception as e:
+                        product.delete()  # Xóa sản phẩm nếu có lỗi khác
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f'Lỗi không xác định khi lưu ảnh: {str(e)}'
+                        }, status=500)
+
+            # Xử lý upload thumbnail
+            if 'thumbnail' in request.FILES:
+                thumbnail = request.FILES['thumbnail']
+                try:
+                    product_thumbnail = ProductThumbnail(
+                        name=thumbnail.name,
+                        # uuid=uuid.uuid4(),  # Thêm uuid để tránh lỗi
+                        product_uuid=product.uuid,
+                        thumbnail=thumbnail,
+                        active=True,
+                        created_at=timezone.now(),
+                        updated_at=timezone.now()
+                    )
+                    product_thumbnail.save()
+                except ValidationError as e:
+                    product.delete()  # Xóa sản phẩm nếu thumbnail không hợp lệ
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Lỗi khi lưu thumbnail: {str(e)}'
+                    }, status=400)
+                except Exception as e:
+                    product.delete()  # Xóa sản phẩm nếu có lỗi khác
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Lỗi không xác định khi lưu thumbnail: {str(e)}'
+                    }, status=500)
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Sản phẩm đã được tạo thành công',
+                'product': {
+                    'uuid': str(product.uuid),
+                    'name': product.name,
+                    'price': product.price,
+                    'sale_price': product.sale_price,
+                    'stock_quantity': product.stock_quantity,
+                    'active': product.active
+                }
+            }, status=201)
+
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Dữ liệu không hợp lệ: {str(e)}'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Lỗi server: {str(e)}'
+            }, status=500)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Phương thức không được hỗ trợ'
+    }, status=405)
+
+@login_required(login_url='account:signin')
+@require_POST
+def admin_edit_product_api_view(request, product_uuid):
+    try:
+        # Lấy sản phẩm cần chỉnh sửa
+        try:
+            product = Product.objects.get(uuid=product_uuid)
+        except Product.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Sản phẩm không tồn tại'
+            }, status=404)
+
+        # Lấy dữ liệu từ form
+        product_name = request.POST.get('product_name')
+        categories_uuid = request.POST.get('categories_uuid')
+        desc = request.POST.get('desc')
+        price = int(request.POST.get('price', 0))
+        sale_price = int(request.POST.get('sale_price', 0))
+        stock_quantity = int(request.POST.get('stock_quantity', 1))
+        is_visible = request.POST.get('active', 'true').lower() == 'true'
+
+        # Kiểm tra dữ liệu hợp lệ
+        if not product_name or not categories_uuid or price < 0 or stock_quantity < 0:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Dữ liệu không hợp lệ. Vui lòng kiểm tra tên, danh mục, giá và số lượng.'
+            }, status=400)
+
+        # Kiểm tra danh mục tồn tại
+        try:
+            Categories.objects.get(uuid=categories_uuid, active=True)
+        except Categories.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Danh mục không tồn tại hoặc không hoạt động.'
+            }, status=400)
+
+        # Cập nhật thông tin sản phẩm
+        product.product_name = product_name
+        product.name = product_name
+        product.categories_uuid = categories_uuid
+        product.desc = desc
+        product.price = price
+        product.sale_price = sale_price
+        product.stock_quantity = stock_quantity
+        product.quantity = stock_quantity
+        product.active = is_visible
+        product.updated_at = timezone.now()
+        product.save()
+
+        # Xử lý xoá ảnh nếu có
+        deleted_image_uuids = request.POST.get('deleted_image_uuids', '[]')
+        try:
+            deleted_image_uuids = json.loads(deleted_image_uuids)
+            ProductImage.objects.filter(
+                uuid__in=[uid for uid in deleted_image_uuids],
+                product_uuid=product.uuid
+            ).delete()
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Danh sách ảnh bị xoá không hợp lệ.'
+            }, status=400)
+
+        # Xử lý ảnh mới
+        if 'images' in request.FILES:
+            for image in request.FILES.getlist('images'):
+                try:
+                    ProductImage.objects.create(
+                        name=image.name,
+                        product_uuid=product.uuid,
+                        image=image,
+                        active=True,
+                        created_at=timezone.now(),
+                        updated_at=timezone.now()
+                    )
+                except Exception as e:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Lỗi khi lưu ảnh: {str(e)}'
+                    }, status=500)
+
+        # Xử lý thumbnail mới
+        if 'thumbnail' in request.FILES:
+            try:
+                ProductThumbnail.objects.filter(product_uuid=product.uuid).delete()
+                ProductThumbnail.objects.create(
+                    name=request.FILES['thumbnail'].name,
+                    product_uuid=product.uuid,
+                    thumbnail=request.FILES['thumbnail'],
+                    active=True,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now()
+                )
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Lỗi khi lưu thumbnail: {str(e)}'
+                }, status=500)
+
+        # Trả kết quả thành công
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Sản phẩm đã được cập nhật thành công.',
+            'product': {
+                'uuid': str(product.uuid),
+                'name': product.name,
+                'price': product.price,
+                'sale_price': product.sale_price,
+                'stock_quantity': product.stock_quantity,
+                'active': product.active
+            }
+        }, status=200)
+
+    except ValueError as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Dữ liệu không hợp lệ: {str(e)}'
+        }, status=400)
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Đã xảy ra lỗi hệ thống: {str(e)}'
+        }, status=500)
+
+
+
+@login_required(login_url='account:signin')
+def admin_delete_product_api_view(request, product_uuid):
+    if request.method == 'POST':
+        try:
+            # Tìm sản phẩm dựa trên UUID
+            product = Product.objects.get(uuid=product_uuid)
+
+            # Lấy tất cả ảnh sản phẩm liên quan
+            product_images = ProductImage.objects.filter(product_uuid=product_uuid)
+
+            # Lấy thumbnail liên quan
+            product_thumbnail = ProductThumbnail.objects.filter(product_uuid=product_uuid, active=True).first()
+
+            # Xóa file ảnh khỏi hệ thống tệp trước khi xóa khỏi cơ sở dữ liệu
+            media_root = settings.MEDIA_ROOT
+            for image in product_images:
+                if image.image and os.path.isfile(os.path.join(media_root, image.image.name)):
+                    os.remove(os.path.join(media_root, image.image.name))
+                image.delete()
+
+            if product_thumbnail and product_thumbnail.thumbnail and os.path.isfile(
+                    os.path.join(media_root, product_thumbnail.thumbnail.name)):
+                os.remove(os.path.join(media_root, product_thumbnail.thumbnail.name))
+                product_thumbnail.delete()
+
+            product.delete()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Sản phẩm và các tệp liên quan đã được xóa thành công'
+            }, status=200)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Sản phẩm không tồn tại hoặc đã bị xóa'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Có lỗi xảy ra: {str(e)}'
+            }, status=500)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Phương thức không được hỗ trợ'
+    }, status=405)
+
+
+#### simple data table không hỗ trợ phân trang cả FE và BE nên phải list tất cả
+@login_required(login_url='account:signin')
+def admin_product_list_api_view(request):
+    page = request.GET.get('page', 1)  # Mặc định là trang 1
+    # per_page = 10  # 9 sản phẩm mỗi trang
+
+    products = Product.objects.all().order_by('-created_at')
+    # paginator = Paginator(products, per_page)
+
+    # try:
+    #     current_page = paginator.page(page)
+    # except Exception:
+    #     return JsonResponse({'error': 'Trang không tồn tại'}, status=404)
+
+    data = []
+    # for product in current_page:
+    for product in products:
+        data.append({
+            'uuid': str(product.uuid),
+            'name': product.name,
+            'product_name': product.product_name,
+            'desc': product.desc,
+            'price': product.price,
+            'thumbnail_url': product.get_thumbnail,
+            'sale_price': product.sale_price,
+            'stock_quantity': product.stock_quantity,
+            'quantity': product.quantity,
+            'categories': product.get_categories(),
+            'created_at': product.created_at,
+            'updated_at': product.updated_at,
+            'status': product.active
+        })
+
+    return JsonResponse({
+        'results': data,
+        # 'total_pages': paginator.num_pages,
+        # 'current_page': current_page.number,
+        # 'has_next': current_page.has_next(),
+        # 'has_previous': current_page.has_previous(),
     }, safe=False)
 
 

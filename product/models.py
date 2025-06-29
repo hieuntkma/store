@@ -7,7 +7,7 @@ from django.utils.timezone import now as djnow
 
 
 class Categories(models.Model):
-    name = models.CharField(max_length=128, editable=True, unique=False)
+    name = models.CharField(max_length=128, editable=True, unique=True)
     uuid = models.UUIDField(default=UUID4,
                             unique=True,
                             editable=False)

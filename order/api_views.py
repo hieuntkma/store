@@ -1,6 +1,7 @@
 import json
 import random
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login
@@ -16,6 +17,91 @@ from django.db import transaction
 from uuid import uuid4
 from django.core.paginator import Paginator
 from django.utils.timesince import timesince
+
+
+@login_required(login_url='account:signin')
+def admin_order_list_api_view(request):
+    try:
+        orders = Order.objects.all().order_by('-created_at')
+        if not orders.exists():
+            return JsonResponse({'success': True, 'message': 'Không có đơn hàng nào'}, status=200)
+
+        results = []
+        for order in orders:
+            # Lấy thông tin hóa đơn nếu có
+            user_name = order.get_user_name()
+            created_date = order.created_at
+
+            results.append({
+                'uuid': str(order.uuid),
+                'created_at': created_date,
+                'user': user_name,
+                'payment_status': 'Đã thanh toán' if order.status in ['delivered'] else 'Chưa thanh toán',
+                'shipping_status': dict(Order._meta.get_field('status').choices).get(order.status, 'Không xác định'),
+            })
+
+        return JsonResponse({'success': True, 'orders': results}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Lỗi xảy ra: {str(e)}'}, status=500)
+
+@login_required(login_url='account:signin')
+def admin_order_detail_api_view(request):
+    try:
+        orders = Order.objects.all().order_by('-created_at')
+        if not orders.exists():
+            return JsonResponse({'success': True, 'message': 'Không có đơn hàng nào'}, status=200)
+
+        results = []
+        for order in orders:
+            # Lấy thông tin hóa đơn nếu có
+            user_name = order.get_user_name()
+            created_date = order.created_at
+
+            results.append({
+                'uuid': str(order.uuid),
+                'created_at': created_date,
+                'user': user_name,
+                'payment_status': 'Đã thanh toán' if order.status in ['confirmed', 'shipping',
+                                                                      'delivered'] else 'Chưa thanh toán',
+                'shipping_status': dict(Order._meta.get_field('status').choices).get(order.status, 'Không xác định'),
+            })
+
+        return JsonResponse({'success': True, 'orders': results}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Lỗi xảy ra: {str(e)}'}, status=500)
+
+
+@login_required(login_url='account:signin')
+@require_POST
+def admin_order_update_status_api_view(request, uuid):
+    try:
+        order = get_object_or_404(Order, uuid=uuid)
+
+        status_type = request.POST.get('type')
+        new_status = request.POST.get('status')
+
+        if status_type not in ['shipping_status', 'payment_status']:
+            return JsonResponse({'status': 'error', 'message': 'Loại trạng thái không hợp lệ'}, status=400)
+
+        if status_type == 'shipping_status':
+            valid_statuses = dict(Order._meta.get_field('status').choices).keys()
+            if new_status not in valid_statuses:
+                return JsonResponse({'status': 'error', 'message': 'Trạng thái giao hàng không hợp lệ'}, status=400)
+
+            order.status = new_status
+            order.updated_at = djnow()
+            order.save()
+            return JsonResponse({'status': 'success', 'message': 'Cập nhật trạng thái giao hàng thành công'})
+
+        # Nếu cần cập nhật payment_status thật sự (ví dụ lưu vào DB), bạn cần thêm field tương ứng trong model Order
+        # Trong trường hợp này chỉ dùng hiển thị nên ta không xử lý payment_status
+
+        return JsonResponse({'status': 'success', 'message': 'Cập nhật trạng thái thành công'})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Lỗi xảy ra: {str(e)}'}, status=500)
 
 
 @require_POST
@@ -109,6 +195,52 @@ def get_user_orders_api_view(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def admin_order_detail_api_view(request, uuid):
+    try:
+        order = Order.objects.filter(uuid=uuid).first()
+        items = OrderItem.objects.filter(order_uuid=order.uuid)
+        bill = Bill.objects.filter(order_uuid=order.uuid).first()
+
+        return JsonResponse({
+            "data": {
+                "uuid": str(order.uuid),
+                "code": order.name,
+                "status": order.get_status_display(),
+                "payment_status": "Đã thanh toán" if order.status == "delivered" else "Chưa thanh toán",
+                "total_price": order.total_price,
+                "created_at": order.created_at,
+                'shipping_price': order.shipping_price,
+
+                # 🆕 Thông tin người nhận hàng
+                "recipient_name": bill.recipient_name,
+                "delivery_address": bill.delivery_address,
+                "recipient_phone": bill.recipient_phone,
+                "recipient_email": bill.recipient_email,
+                "note": bill.note,
+
+                # Danh sách sản phẩm
+                "items": [
+                    {
+                        "product_uuid": item.product_uuid,
+                        "product_name": item.product_name,
+                        "quantity": item.quantity,
+                        "unit_price": item.unit_price,
+                        "total": item.unit_price * item.quantity,
+                        "thumbnail": item.get_thumbnail
+                    }
+                    for item in items
+                ]
+            }
+        }, status=200)
+
+    except Order.DoesNotExist:
+        return JsonResponse({"error": "Đơn hàng không tồn tại hoặc bạn không có quyền truy cập."}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": "Lỗi máy chủ nội bộ.", "detail": str(e)}, status=500)
 
 
 @login_required
