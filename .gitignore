@@ -183,3 +183,4 @@ cython_debug/
 # crawl
 hnt_setttings.py
 #!store/static/store/fruitable/assets/lib/**
+.env
