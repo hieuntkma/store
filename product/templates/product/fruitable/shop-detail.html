@@ -61,18 +61,20 @@
                         <h4 class="fw-bold mb-2">{{ product.product_name }}</h4>
 
                         <!-- Hiển thị số sao trung bình -->
-                        <div class="d-flex align-items-center mb-3">
-                            {% for i in "12345" %}
-                                {% if i|add:0 <= average_rating %}
-                                    <i class="fa fa-star text-warning"></i>
-                                {% elif i|add:0 <= average_rating|add:0.5 %}
-                                    <i class="fa fa-star-half-alt text-warning"></i>
-                                {% else %}
-                                    <i class="fa fa-star text-secondary"></i>
-                                {% endif %}
-                            {% endfor %}
-                            <span class="ms-2 text-muted small">({{ average_rating }}/5)</span>
-                        </div>
+<div class="d-flex align-items-center mb-2">
+    {% for star in stars %}
+        {% if star == 'full' %}
+            <i class="fa fa-star text-warning"></i>
+        {% elif star == 'half' %}
+            <i class="fa fa-star-half-alt text-warning"></i>
+        {% else %}
+            <i class="fa fa-star text-muted"></i>
+        {% endif %}
+    {% endfor %}
+    <span class="ms-2 text-muted">({{ average_rating }}/5)</span>
+</div>
+
+
 
                         <p class="mb-3">Loại sản phẩm: <span
                                 class="text-success fw-semibold">{{ product.categories }}</span></p>
@@ -142,16 +144,21 @@
                                             <div class="">
                                                 <p class="mb-1 small text-muted">{{ fb.created_at|date:"d/m/Y H:i" }}</p>
                                                 <div class="d-flex justify-content-between">
-                                                    <h6 class="fw-bold">{{ fb.name }}</h6>
-                                                    <div class="d-flex mb-2">
-                                                        {% for i in "12345" %}
-                                                            {% if i|add:0 <= fb.rating %}
-                                                                <i class="fa fa-star text-warning"></i>
-                                                            {% else %}
-                                                                <i class="fa fa-star text-secondary"></i>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </div>
+                                                   <h6 class="fw-bold">{{ fb.name }}</h6>
+<div class="d-flex mb-2">
+    {% for star in fb.stars %}
+        {% if star == 'full' %}
+            <i class="fa fa-star text-warning"></i>
+        {% elif star == 'half' %}
+            <i class="fa fa-star-half-alt text-warning"></i>
+        {% else %}
+            <i class="fa fa-star text-muted"></i>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+
                                                 </div>
                                                 <p class="text-dark">{{ fb.comment }}</p>
                                                 {% if fb.feedback_image %}

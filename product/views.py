@@ -18,11 +18,36 @@ from django.db.models import Avg
 # Create your views here.
 
 
+from math import floor
+
 def shop_detail_view(request, uuid):
     product = get_object_or_404(Product, uuid=uuid, active=True)
 
-    feedbacks = Feedback.objects.filter(product_uuid=uuid, active=True).order_by('-created_at')
-    average_rating = feedbacks.aggregate(avg=Avg('rating'))['avg'] or 0
+    feedback_queryset = Feedback.objects.filter(product_uuid=uuid, active=True).order_by('-created_at')
+    average_rating = feedback_queryset.aggregate(avg=Avg('rating'))['avg'] or 0
+
+    # Xử lý sao trung bình
+    full_stars = int(floor(average_rating))
+    has_half_star = 0.25 <= (average_rating - full_stars) < 0.75
+    empty_stars = 5 - full_stars - (1 if has_half_star else 0)
+    stars = ['full'] * full_stars + (['half'] if has_half_star else []) + ['empty'] * empty_stars
+
+    # Từng đánh giá
+    feedbacks = []
+    for fb in feedback_queryset:  
+        fb_rating = fb.rating or 0
+        full = int(floor(fb_rating))
+        half = 1 if 0.25 <= (fb_rating - full) < 0.75 else 0
+        empty = 5 - full - half
+        fb_stars = ['full'] * full + ['half'] * half + ['empty'] * empty
+
+        feedbacks.append({
+            'name': fb.name,
+            'comment': fb.comment,
+            'created_at': fb.created_at,
+            'feedback_image': fb.feedback_image,
+            'stars': fb_stars
+        })
 
     context = {
         'product': {
@@ -42,10 +67,12 @@ def shop_detail_view(request, uuid):
             'updated_at': product.updated_at,
         },
         'feedbacks': feedbacks,
-        'average_rating': round(average_rating, 1)
+        'average_rating': round(average_rating, 1),
+        'stars': stars,
     }
 
     return render(request, 'product/fruitable/shop-detail.html', context)
+
 
 
 
@@ -96,7 +123,7 @@ def feedback_view(request):
 
         # Tạo feedback
         Feedback.objects.create(
-            name=f"Feedback của {request.user}",
+            name=request.user.username,
             uuid=uuid4(),
             product_uuid=product_uuid,
             order_uuid=order_uuid,
