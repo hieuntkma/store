@@ -95,7 +95,7 @@ var optionsEurope = {
 let optionsAmerica = {
 	...optionsEurope,
 	colors: ['#008b75'],
-}
+}Napi
 let optionsIndonesia = {
 	...optionsEurope,
 	colors: ['#dc3545'],

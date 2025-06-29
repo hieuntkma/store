@@ -17,7 +17,8 @@ from django.db import transaction
 from uuid import uuid4
 from django.core.paginator import Paginator
 from django.utils.timesince import timesince
-
+from django.db.models.functions import TruncDay, TruncMonth, TruncYear
+from django.db.models import Count
 
 @login_required(login_url='account:signin')
 def admin_order_list_api_view(request):
@@ -302,3 +303,47 @@ def cancel_order_api_view(request, order_uuid):
                 return JsonResponse({"error": "Không thể hủy đơn trong trạng thái hiện tại"}, status=400)
         except Order.DoesNotExist:
             return JsonResponse({"error": "Không tìm thấy đơn hàng"}, status=404)
+
+@login_required
+def admin_order_stats_api_view(request):
+    group_type = request.GET.get('type', 'day')
+
+    # Lấy danh sách các đơn hàng đã giao thành công
+    delivered_order_uuids = Order.objects.filter(
+        status="delivered", active=True
+    ).values_list('uuid', flat=True)
+
+    # Lọc OrderItem theo các đơn hàng này
+    queryset = OrderItem.objects.filter(
+        order_uuid__in=delivered_order_uuids,
+        active=True
+    )
+
+    # Group theo thời gian
+    if group_type == 'year':
+        stats = queryset.annotate(
+            period=TruncYear('created_at')
+        ).values('period').annotate(
+            total_quantity=Sum('quantity')
+        ).order_by('period')
+        labels = [entry['period'].strftime('%Y') for entry in stats]
+
+    elif group_type == 'month':
+        stats = queryset.annotate(
+            period=TruncMonth('created_at')
+        ).values('period').annotate(
+            total_quantity=Sum('quantity')
+        ).order_by('period')
+        labels = [entry['period'].strftime('%m-%Y') for entry in stats]
+
+    else:  # default: day
+        stats = queryset.annotate(
+            period=TruncDay('created_at')
+        ).values('period').annotate(
+            total_quantity=Sum('quantity')
+        ).order_by('period')
+        labels = [entry['period'].strftime('%d-%m-%Y') for entry in stats]
+
+    values = [entry['total_quantity'] for entry in stats]
+
+    return JsonResponse({'labels': labels, 'values': values})

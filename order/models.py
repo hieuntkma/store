@@ -72,6 +72,16 @@ class Order(models.Model):
         bill = Bill.objects.filter(order_id=self.uuid).first()
         return bill
 
+    def get_total(self):
+        bill = Bill.objects.all().count()
+        return bill
+    def get_revenue(self):
+        bills = Bill.objects.all()
+        revenue = 0
+        for bill in bills:
+            revenue += bill.total_price
+        return revenue
+
 
 class OrderItem(models.Model):
     name = models.CharField(max_length=128,

@@ -84,6 +84,10 @@ class Product(models.Model):
         except Categories.DoesNotExist:
             return None
 
+    def get_total(self):
+        product = Product.objects.all().count()
+        return product
+
     @property
     def get_thumbnail(self):
         try:
@@ -201,7 +205,6 @@ class Feedback(models.Model):
     def save(self, *args, **kwargs):
         self.updated_at = djnow()
         super().save(*args, **kwargs)
-
 
 # from django.db.models.signals import post_save
 # from django.dispatch import receiver

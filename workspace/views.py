@@ -18,7 +18,23 @@ def admin_index_view(request):
     context = {}
     context["breadscrumb"] = "Dashboard"
     context["breadscrumb_url"] = reverse('workspace:admin_index_view')
-
+    accounts = Account.objects.all()
+    orders = Order.objects.all()
+    products = Product.objects.all()
+    context["accounts"] = accounts.count()
+    context["orders"] = orders.count()
+    context["products"] = products.count()
+    ordered = Order.objects.filter(status="delivered")
+    revenue = 0
+    for order in ordered:
+        revenue += order.total_price
+    context["revenue"] = revenue
+    profile = UserProfile.objects.get(account=request.user)
+    account = Account.objects.get(uuid=request.user.uuid)
+    context["profile_avt"]= "/media/"+ str(profile.avatar)
+    print(profile.avatar)
+    context["profile_username"]=account.username
+    context["profile_fullname"]=profile.get_full_name()
     # template = loader.get_template(str('workspace/mazer/workspace.html'))
     template = loader.get_template(str('workspace/mazer/workspace.html'))
     return HttpResponse(template.render(context, request))

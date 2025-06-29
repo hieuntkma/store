@@ -688,23 +688,28 @@ def best_seller_products_api_view(request):
         .order_by('-total_quantity')[:limit]
     )
 
-    product_uuids = [item['product_uuid'] for item in best_sellers]
+    # Tạo map product_uuid -> total_quantity
+    quantity_map = {str(item['product_uuid']): item['total_quantity'] for item in best_sellers}
+    product_uuids = list(quantity_map.keys())
+
     products = Product.objects.filter(uuid__in=product_uuids, active=True)
 
-    # Trả dữ liệu kèm URL
+    # Trả dữ liệu
     data = []
     for p in products:
+        uuid_str = str(p.uuid)
         data.append({
-            'uuid': str(p.uuid),
+            'uuid': uuid_str,
             'name': p.name,
             'price': p.price,
             'sale_price': p.sale_price,
             'thumbnail': p.get_thumbnail if hasattr(p, 'get_thumbnail') else '',
-            'detail_url': reverse('product:shop_detail', args=[str(p.uuid)])
+            'detail_url': reverse('product:shop_detail', args=[uuid_str]),
+            'sold_quantity': quantity_map.get(uuid_str, 0)
         })
+    data.sort(key=lambda x: x['sold_quantity'], reverse=True)
 
     return JsonResponse({'data': data}, status=200)
-
 
 def product_detail(request, uuid):
     try:
