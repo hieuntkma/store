@@ -13,19 +13,41 @@ from order.models import Order  # dùng để kiểm tra đơn hàng nếu cần
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now as djnow
 from .models import *
-
+from django.db.models import Avg
 
 # Create your views here.
 
 
+from math import floor
+
 def shop_detail_view(request, uuid):
-    context = {}
     product = get_object_or_404(Product, uuid=uuid, active=True)
 
-    # related_products = Product.objects.filter(
-    #     categories_uuid=product.categories_uuid,
-    #     active=True
-    # ).exclude(uuid=product.uuid).order_by('-created_at')[:8]
+    feedback_queryset = Feedback.objects.filter(product_uuid=uuid, active=True).order_by('-created_at')
+    average_rating = feedback_queryset.aggregate(avg=Avg('rating'))['avg'] or 0
+
+    # Xử lý sao trung bình
+    full_stars = int(floor(average_rating))
+    has_half_star = 0.25 <= (average_rating - full_stars) < 0.75
+    empty_stars = 5 - full_stars - (1 if has_half_star else 0)
+    stars = ['full'] * full_stars + (['half'] if has_half_star else []) + ['empty'] * empty_stars
+
+    # Từng đánh giá
+    feedbacks = []
+    for fb in feedback_queryset:  
+        fb_rating = fb.rating or 0
+        full = int(floor(fb_rating))
+        half = 1 if 0.25 <= (fb_rating - full) < 0.75 else 0
+        empty = 5 - full - half
+        fb_stars = ['full'] * full + ['half'] * half + ['empty'] * empty
+
+        feedbacks.append({
+            'name': fb.name,
+            'comment': fb.comment,
+            'created_at': fb.created_at,
+            'feedback_image': fb.feedback_image,
+            'stars': fb_stars
+        })
 
     context = {
         'product': {
@@ -44,10 +66,14 @@ def shop_detail_view(request, uuid):
             'created_at': product.created_at,
             'updated_at': product.updated_at,
         },
-        # 'related_products': related_products,
+        'feedbacks': feedbacks,
+        'average_rating': round(average_rating, 1),
+        'stars': stars,
     }
 
     return render(request, 'product/fruitable/shop-detail.html', context)
+
+
 
 
 def shop_view(request):
@@ -85,17 +111,19 @@ def feedback_view(request):
         comment = request.POST.get("comment")
         feedback_image = request.FILES.get("feedback_image")
 
+        # Nếu thiếu thông tin → quay lại trang hiện tại với mã đơn
         if not (product_uuid and order_uuid and rating):
             messages.error(request, "Vui lòng nhập đầy đủ thông tin bắt buộc.")
-            return redirect('feedback_view')
+            return redirect(f'/product/feedback/?order={order_uuid}')
 
-        # (tùy chọn) kiểm tra đơn hàng có thuộc user không
+        # Kiểm tra đơn có thuộc user hay không
         if not Order.objects.filter(uuid=order_uuid, account_uuid=request.user.uuid).exists():
             messages.error(request, "Không tìm thấy đơn hàng tương ứng.")
-            return redirect('feedback_view')
+            return redirect('account:order_list_view')
 
+        # Tạo feedback
         Feedback.objects.create(
-            name=f"Feedback của {request.user}",
+            name=request.user.username,
             uuid=uuid4(),
             product_uuid=product_uuid,
             order_uuid=order_uuid,
@@ -108,8 +136,18 @@ def feedback_view(request):
         )
 
         messages.success(request, "Đánh giá đã được gửi thành công!")
-        return redirect('feedback_view')
+        return redirect(f'/product/feedback/?order={order_uuid}')
 
-    return render(request, 'product/fruitable/feedback.html')
+    # ❗ Đây là xử lý GET: người dùng vừa truy cập /product/feedback/?order=...
+    order_uuid = request.GET.get("order")
+    if not order_uuid:
+        # Nếu người dùng gõ URL trực tiếp sai → báo lỗi
+        messages.error(request, "Thiếu thông tin đơn hàng để hiển thị đánh giá.")
+        return redirect('account:order_list_view')
+
+    # ✅ Truyền order_uuid sang template
+    return render(request, 'product/fruitable/feedback.html', {
+        "order_uuid": order_uuid
+    })
 
 

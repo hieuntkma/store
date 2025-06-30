@@ -445,13 +445,14 @@
                     }
 
                     // Hủy carousel cũ nếu đã có
+                    if (container.hasClass("owl-loaded")) {
+                        container.trigger('destroy.owl.carousel');
+                        container.removeClass('owl-loaded owl-carousel owl-theme');
+                        container.find('.owl-stage-outer').children().unwrap();
+                        container.html("");  // xóa nội dung cũ
+                    }
 
-                    container.trigger('destroy.owl.carousel');
-                    container.removeClass('owl-loaded owl-carousel owl-theme');
-                    container.html("");  // xóa nội dung cũ
-
-
-// Thêm lại class owl-carousel
+                    // Thêm class owl-carousel (nếu bị mất sau khi destroy)
                     container.addClass("owl-carousel");
 
                     // Tạo nội dung HTML
@@ -532,39 +533,46 @@
                     container.innerHTML = '';
 
                     data.data.forEach(product => {
+                        // Tạo HTML hiển thị số sao trung bình
+                        const roundedRating = Math.round(product.avg_rating);
+                        let starsHTML = '';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHTML += `<i class="fas fa-star${i <= roundedRating ? ' text-warning' : ' text-muted'}"></i>`;
+                        }
+
                         container.innerHTML += `
-                        <div class="col-lg-6 col-xl-4 mb-4">
-                            <div class="p-4 rounded bg-light h-100">
-                                <div class="row align-items-center">
-                                    <div class="col-6">
-                                        <img src="${product.thumbnail}" class="img-fluid rounded-circle w-100" alt="">
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="p-4 rounded bg-light h-100">
+                            <div class="row align-items-center">
+                                <div class="col-6">
+                                    <a href="${product.detail_url}">
+                                    <img src="${product.thumbnail}" class="img-fluid rounded-circle w-100" alt="${product.name}">
+                                </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="${product.detail_url}" class="h6">${product.name}</a>
+                                    <div class="d-flex align-items-center my-2">
+                                        ${starsHTML}
+                                        <small class="ms-2 text-muted">(${product.avg_rating}⭐)</small>
                                     </div>
-                                    <div class="col-6">
-                                        <a href="${product.detail_url}" class="h6">${product.name}</a>
-                                        <div class="d-flex my-3">
-                                            <i class="fas fa-star text-secondary"></i>
-                                            <i class="fas fa-star text-secondary"></i>
-                                            <i class="fas fa-star text-secondary"></i>
-                                            <i class="fas fa-star text-secondary"></i>
-                                            <i class="fas fa-star"></i>
-                                        </div>
-                                        <div class="price-area text-center mb-3">
-                                                <span class="text-success fw-bold me-2">
-                                                    ${product.sale_price.toLocaleString()}₫
-                                                </span>
-                                                <del class="text-muted small">
-                                                    ${product.price.toLocaleString()}₫
-                                                </del>
-                                        </div>
-                                        <a href="${product.detail_url}"
-                                           class="btn border border-secondary rounded-pill px-3 text-primary">
-                                            <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
-                                        </a>
+                                    <div class="mb-2 text-muted small">Đã bán: ${product.sold_quantity}</div>
+                                    <div class="price-area text-center mb-3">
+                                        <span class="text-success fw-bold me-2">
+                                            ${product.sale_price.toLocaleString()}₫
+                                        </span>
+                                        <del class="text-muted small">
+                                            ${product.price.toLocaleString()}₫
+                                        </del>
                                     </div>
+                                    <a href="${product.detail_url}"
+                                       class="btn border border-secondary rounded-pill px-3 text-primary">
+                                        <i class="fas fa-search me-2 text-success"></i> Xem chi tiết
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
                     });
                 });
         });

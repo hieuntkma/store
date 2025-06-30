@@ -1,5 +1,7 @@
 from django.db import models
 from uuid import uuid4 as UUID4
+
+from django.db.models import Avg
 from django.utils.timezone import now as djnow
 
 
@@ -84,10 +86,6 @@ class Product(models.Model):
         except Categories.DoesNotExist:
             return None
 
-    def get_total(self):
-        product = Product.objects.all().count()
-        return product
-
     @property
     def get_thumbnail(self):
         try:
@@ -105,6 +103,20 @@ class Product(models.Model):
         except Exception as xx:
             print(xx)
             return None
+
+    def get_feedback_stars(self):
+        try:
+            from cart.models import Feedback
+            avg_rating = Feedback.objects.filter(
+                product_uuid=self.uuid,
+                # active=True,
+                rating__isnull=False
+            ).aggregate(avg=Avg('rating'))['avg']
+
+            return round(avg_rating, 1) if avg_rating is not None else 0
+        except Exception as e:
+            print("Lỗi tính feedback:", e)
+            return 0
 
 
 class ProductImage(models.Model):
@@ -205,6 +217,8 @@ class Feedback(models.Model):
     def save(self, *args, **kwargs):
         self.updated_at = djnow()
         super().save(*args, **kwargs)
+class Meta:
+    unique_together = ("order_uuid", "product_uuid")
 
 # from django.db.models.signals import post_save
 # from django.dispatch import receiver
