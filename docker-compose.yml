@@ -22,7 +22,7 @@ services:
     depends_on:
       - db
     volumes:
-      - /static:/app/static 
+      - /static:/app/staticfiles
       - /media:/app/media
     networks:
       - hnt-network
