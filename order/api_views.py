@@ -276,7 +276,17 @@ def get_order_detail_api_view(request, uuid):
                         "quantity": item.quantity,
                         "unit_price": item.unit_price,
                         "total": item.unit_price * item.quantity,
-                        "thumbnail": item.get_thumbnail
+                        "thumbnail": item.get_thumbnail,
+                       "already_reviewed": Feedback.objects.filter(
+                             order_uuid=order.uuid,
+                              product_uuid=item.product_uuid,
+                              account_uuid=request.user.uuid
+                              ).exists(),
+                    "review": Feedback.objects.filter(
+            product_uuid=item.product_uuid,
+            order_uuid=order.uuid,
+            account_uuid=request.user.uuid
+        ).values("rating", "comment", "feedback_image").first()
                     }
                     for item in items
                 ]

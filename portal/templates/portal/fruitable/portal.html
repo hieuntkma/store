@@ -445,13 +445,14 @@
                     }
 
                     // Hủy carousel cũ nếu đã có
+                    if (container.hasClass("owl-loaded")) {
+                        container.trigger('destroy.owl.carousel');
+                        container.removeClass('owl-loaded owl-carousel owl-theme');
+                        container.find('.owl-stage-outer').children().unwrap();
+                        container.html("");  // xóa nội dung cũ
+                    }
 
-                    container.trigger('destroy.owl.carousel');
-                    container.removeClass('owl-loaded owl-carousel owl-theme');
-                    container.html("");  // xóa nội dung cũ
-
-
-// Thêm lại class owl-carousel
+                    // Thêm class owl-carousel (nếu bị mất sau khi destroy)
                     container.addClass("owl-carousel");
 
                     // Tạo nội dung HTML

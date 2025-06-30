@@ -19,8 +19,8 @@
             <th>Đơn hàng</th>
             <th>Ngày đặt</th>
             <th>Giá trị đơn hàng</th>
-            <th>Trạng thái thanh toán</th>
             <th>Trạng thái giao hàng</th>
+            <th>Trạng thái thanh toán</th>
         </tr>
         </thead>
         <tbody id="order-body">
@@ -258,7 +258,7 @@
                     } else if (order.status === "Đã nhận hàng") {
                         html += `
                             <div class="d-flex justify-content-end gap-2 mt-4">
-                                <a href="/product/feedback/" class="btn btn-outline-success" id="feedback-btn">Đánh giá</a>
+                               <a href="/product/feedback/?order=${order.uuid}" class="btn btn-outline-success" id="feedback-btn">Đánh giá</a>
                             </div>
                             <div class="text-center mt-4">
                                 <span class="text-success fw-bold">Đơn hàng đã hoàn thành</span>
