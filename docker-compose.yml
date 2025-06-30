@@ -26,7 +26,7 @@ services:
       - /media:/app/media
     networks:
       - hnt-network
-    entrypoint: [ "/bin/sh", "-c", "python manage.py collectstatic --noinput" ]
+#    entrypoint: [ "/bin/sh", "-c", "python manage.py collectstatic --noinput" ]
 
 networks:
   hnt-network:
