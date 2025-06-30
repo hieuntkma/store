@@ -79,28 +79,38 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd /python/store
+  
             echo "📊 Dung lượng trước deploy:"
             docker system df
             df -h
+            
             echo "🐳 Dừng dịch vụ cũ..."
             docker compose down
+            
             echo "🧹 Xoá image không dùng..."
             docker image prune -f
+            
             echo "🧹 Xoá cache build cũ..."
             docker builder prune --filter "until=24h" -f
+            
+            echo "📦 Chạy collectstatic trước khi chạy container..."
+            docker compose run --rm collectstatic
+            
             echo "🚀 Khởi động dịch vụ..."
             if ! docker compose pull; then
-              echo "❌ Kéo image thất bại!"
-              exit 1
+            echo "❌ Kéo image thất bại!"
+            exit 1
             fi
+            
             if ! docker compose up -d; then
-              echo "❌ Deploy thất bại, khôi phục dịch vụ cũ..."
-              docker compose up -d
-              exit 1
+            echo "❌ Deploy thất bại, khôi phục dịch vụ cũ..."
+            docker compose up -d
+            exit 1
             fi
+            
             echo "📊 Dung lượng sau deploy:"
             docker system df
             df -h
-            echo "📦 Chạy collectstatic..."
-            docker compose exec -T web python manage.py collectstatic --noinput
+            
             echo "✅ Deploy hoàn tất!"
+
