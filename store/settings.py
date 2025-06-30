@@ -13,9 +13,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from os import environ
+# from dotenv import load_dotenv
+# from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -27,6 +30,13 @@ SECRET_KEY = 'django-insecure-hlpl(tt6ph+!$4^=1phb3)2b-fd97q()5q=5#mwii*!mr^*3h3
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://hieunamson.id.vn",
+    "https://hieunamson.id.vn",  # nếu bạn dùng HTTPS 
+    "http://test.hieunamson.id.vn",
+    "https://test.hieunamson.id.vn",  # nếu bạn dùng HTTPS
+]
 
 # Application definition
 
@@ -72,6 +82,7 @@ ROOT_URLCONF = 'store.urls'
 TEMPLATE_DIRS = [
     os.path.join(BASE_DIR, 'store', 'templates'),  # Absolute Path
     os.path.join(BASE_DIR, 'portal', 'templates'),  # Absolute Path
+    # os.path.join(BASE_DIR, 'workspace', 'templates'),  # Absolute Path
 ]
 
 for app in APP_LIST:
@@ -163,6 +174,7 @@ DATABASES = {
         'NAME': NS_store_DB_NAME,
         'USER': NS_store_DB_USER,
         'PASSWORD': NS_store_DB_PASSWORD,
+        # 'HOST': 'db',
         'HOST': NS_store_DB_HOST,
         'PORT': NS_store_DB_PORT,
         'TEST': {

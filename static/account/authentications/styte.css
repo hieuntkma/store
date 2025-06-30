@@ -1,0 +1,45 @@
+/* Custom styles */
+.card {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    padding: 0.6rem 1rem;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.toggle-form {
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+.toggle-form:hover {
+    text-decoration: underline;
+}
+
+/* Animation for form switching */
+.card.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.card.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}

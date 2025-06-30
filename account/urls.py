@@ -19,4 +19,8 @@ urlpatterns = [
     ### Api View ###
     path('api/v1/signin/', api_views.signin_api_view, name='signin_api_view'),
     path('api/v1/signup/', api_views.signup_api_view, name='signup_api_view'),
+    path('api/v1/users/admin/', api_views.admin_get_all_user, name='admin_get_all_user'),
+    path('api/v1/users/admin/create/', api_views.admin_create_user_api_view, name='admin_create_user_api_view'),
+    path('api/v1/users/admin/<user_uuid>/edit/', api_views.admin_edit_user_api_view, name='admin_edit_user_api_view'),
+    path('api/v1/users/admin/<user_uuid>/delete/', api_views.admin_delete_user_api_view, name='admin_delete_user_api_view'),
 ]

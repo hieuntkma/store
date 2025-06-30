@@ -1,0 +1,106 @@
+name: CI/CD Deploy to Server 2.0
+on:
+  push:
+    branches:
+      - develop
+      - production
+#    paths:
+#      - 'src/**'
+#      - 'Dockerfile'
+#      - 'docker-compose.yml'
+#      - 'requirements.txt'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ Checkout code
+        uses: actions/checkout@v4
+      - name: 🛠 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: 🧪 Run tests
+        run: |
+          python manage.py test
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ Checkout code
+        uses: actions/checkout@v4
+      - name: 🛠 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: 🔐 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: 🏗 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/store:${{ github.sha }},${{ secrets.DOCKER_USERNAME }}/store:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/store:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/store:buildcache,mode=max
+      - name: 🧹 Clean up runner
+        run: |
+          docker image prune -f
+          docker builder prune --filter "until=24h" -f
+        if: always()
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ Checkout code
+        uses: actions/checkout@v4
+      - name: 📤 Upload docker-compose.yml
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SSH_RSA_KEY }}
+          source: "docker-compose.yml"
+          target: "/python/store"
+      - name: 🚀 SSH and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SSH_RSA_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /python/store
+            echo "📊 Dung lượng trước deploy:"
+            docker system df
+            df -h
+            echo "🐳 Dừng dịch vụ cũ..."
+            docker compose down
+            echo "🧹 Xoá image không dùng..."
+            docker image prune -f
+            echo "🧹 Xoá cache build cũ..."
+            docker builder prune --filter "until=24h" -f
+            echo "🚀 Khởi động dịch vụ..."
+            if ! docker compose pull; then
+              echo "❌ Kéo image thất bại!"
+              exit 1
+            fi
+            if ! docker compose up -d; then
+              echo "❌ Deploy thất bại, khôi phục dịch vụ cũ..."
+              docker compose up -d
+              exit 1
+            fi
+            echo "📊 Dung lượng sau deploy:"
+            docker system df
+            df -h
+            echo "📦 Chạy collectstatic..."
+            docker compose exec -T web python manage.py collectstatic --noinput
+            echo "✅ Deploy hoàn tất!"

@@ -17,10 +17,17 @@ from django.contrib.auth import update_session_auth_hash
 
 def signin_view(request):
     context = {}
+
     if request.user.is_authenticated:
-        return redirect('portal:index')
-        # return HttpResponse('Hello')
-    template = loader.get_template(str('account/authentications/signin.html'))
+        # Nếu là admin hoặc staff → chuyển về trang quản trị
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('workspace:admin_index_view')
+        else:
+            # Người dùng thông thường → chuyển về trang cổng người dùng
+            return redirect('portal:index')
+
+    # Nếu chưa đăng nhập → hiển thị trang đăng nhập
+    template = loader.get_template('account/authentications/signin.html')
     return HttpResponse(template.render(context, request))
 
 

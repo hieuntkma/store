@@ -40,7 +40,9 @@ class Account(AbstractUser):
     def __str__(self):
         return self.username +  '-' + str(self.uuid)
 
-
+    def get_total(self):
+        account = Account.objects.all().count()
+        return account
 
 class UserProfile(models.Model):
     GENDER_CHOICES = (

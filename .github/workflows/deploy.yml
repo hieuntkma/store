@@ -1,0 +1,68 @@
+name: CI/CD Deploy to Server
+
+on:
+  push:
+    branches:
+#      - develop
+      - production
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ✅ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Compress source code (exclude .git, __pycache__, *.sqlite3, .env)
+        run: |
+          tar \
+            --exclude=".git" \
+            --exclude="__pycache__" \
+            --exclude="*.sqlite3" \
+            --exclude="store.tar.gz" \
+            --warning=no-file-changed \
+            --ignore-failed-read \
+            -czf store.tar.gz .
+
+      - name: 📤 Upload to server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: root
+          password: ${{ secrets.SSH_RSA_KEY }}
+          source: "store.tar.gz"
+          target: "/python"
+
+      - name: 🚀 SSH and deploy on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: root
+          password: ${{ secrets.SSH_RSA_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /python
+
+            echo "📦 Giải nén mã nguồn..."
+            rm -rf store_old
+            [ -d store ] && mv store store_old
+            mkdir store && tar -xzf store.tar.gz -C store
+            rm store.tar.gz
+
+            echo "🐳 Dừng dịch vụ cũ (nếu có)..."
+            cd store
+            docker compose down
+
+            echo "🧹 Xoá image không còn dùng..."
+            docker image prune -a -f
+
+            echo "🧹 Xoá cache build..."
+            docker builder prune -f
+
+            echo "🚀 Khởi động lại dịch vụ..."
+            docker compose up -d --build
+
+            echo "✅ Deploy hoàn tất!"

@@ -7,7 +7,7 @@ from django.utils.timezone import now as djnow
 
 
 class Categories(models.Model):
-    name = models.CharField(max_length=128, editable=True, unique=False)
+    name = models.CharField(max_length=128, editable=True, unique=True)
     uuid = models.UUIDField(default=UUID4,
                             unique=True,
                             editable=False)
@@ -83,6 +83,10 @@ class Product(models.Model):
             return categories.name
         except Categories.DoesNotExist:
             return None
+
+    def get_total(self):
+        product = Product.objects.all().count()
+        return product
 
     @property
     def get_thumbnail(self):

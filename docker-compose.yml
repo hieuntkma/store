@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:latest
+    container_name: hnt-db
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    volumes:
+      - /python/data:/var/lib/postgresql/data
+      - /python/store.sql:/docker-entrypoint-initdb.d/init_data.sql:ro
+    networks:
+      - hnt-network
+
+  web:
+    image: hieuntkma/store:latest
+    container_name: hnt-web
+    command: gunicorn --bind 0.0.0.0:8000 --workers 3 store.wsgi:application
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - /static:/app/static 
+    networks:
+      - hnt-network
+
+networks:
+  hnt-network:
+    driver: bridge
