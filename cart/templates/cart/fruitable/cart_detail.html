@@ -149,9 +149,34 @@
                     quantity: quantity
                 })
             })
-                .then(response => response.json())
-                .then(() => location.reload())
-                .catch(error => console.error("Cập nhật giỏ hàng lỗi:", error));
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cập nhật thất bại',
+                            text: data.error || "Không thể cập nhật giỏ hàng.",
+                            confirmButtonText: 'Đóng'
+                        }).then(() => {
+                            location.reload();  // Reload sau khi bấm OK
+                        });
+                        return;
+                    }
+
+                    // ✅ Nếu thành công → reload
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("❌ Lỗi cập nhật:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi máy chủ',
+                        text: 'Đã xảy ra lỗi khi cập nhật giỏ hàng.',
+                        confirmButtonText: 'Đóng'
+                    }).then(() => {
+                        location.reload();  // Reload sau khi bấm OK
+                    });
+                });
         }
 
         function removeCartItem(productUUID) {
@@ -320,16 +345,9 @@
                 });
             });
 
-            const accountUUID = "{{ request.user.uuid }}";  // Custom user phải có uuid
-            {#console.log(cartItems)#}
-            // Gọi tuần tự từng update (có thể dùng Promise.all nếu muốn đồng loạt)
-            const updatePromises = cartItems.map(item => {
-                console.log("📦 Dữ liệu gửi:", {
-                    account_uuid: accountUUID,
-                    product_uuid: item.product_uuid,
-                    quantity: item.quantity
-                });
+            const accountUUID = "{{ request.user.uuid }}";
 
+            const updatePromises = cartItems.map(item => {
                 return fetch("{% url 'cart:update_cart_item_api_view' %}", {
                     method: "POST",
                     headers: {
@@ -357,16 +375,19 @@
                 });
             });
 
-            // Sau khi tất cả update xong → chuyển sang trang đặt hàng
-            Promise.all(updatePromises)
+            Promise.allSettled(updatePromises)
                 .then(results => {
-                    console.log("✅ Kết quả cập nhật:", results);
-
-                    // Chỉ lọc những phần tử có `error` và không phải undefined/null
-                    const failed = results.find(r => r && r.error);
+                    const failed = results.find(r => r.status === "rejected");
 
                     if (failed) {
-                        alert("❌ Có lỗi khi cập nhật giỏ hàng: " + failed.error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi cập nhật giỏ hàng',
+                            text: failed.reason.message || "Có lỗi xảy ra.",
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();  // Reload sau khi báo lỗi
+                        });
                         return;
                     }
 
@@ -374,8 +395,14 @@
                     window.location.href = "{% url 'order:create_order_view' %}";
                 })
                 .catch(err => {
-                    console.error("❌ Lỗi cập nhật giỏ hàng:", err.message || err);
-                    alert("Không thể cập nhật giỏ hàng: " + (err.message || "Đã xảy ra lỗi"));
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi máy chủ',
+                        text: err.message || "Không thể cập nhật giỏ hàng.",
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
                 });
         });
     </script>

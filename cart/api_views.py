@@ -37,10 +37,21 @@ def create_cart_item_api_view(request):
             from product.models import Product
             product = Product.objects.get(uuid=product_uuid, active=True)
 
-            # Nếu đã có item → update
+            # Tính tổng quantity nếu đã có
             cart_item = CartItem.objects.filter(cart_uuid=cart.uuid, product_uuid=product_uuid, active=True).first()
+            total_quantity = quantity
             if cart_item:
-                cart_item.quantity += quantity
+                total_quantity += cart_item.quantity
+
+            # Kiểm tra tồn kho
+            if total_quantity > product.stock_quantity:
+                return JsonResponse({
+                    'error': f'Chỉ còn {product.stock_quantity} sản phẩm trong kho.'
+                }, status=400)
+
+            # Nếu đã có item → update
+            if cart_item:
+                cart_item.quantity = total_quantity
                 cart_item.name = product.product_name
                 cart_item.unit_price = product.sale_price
                 cart_item.save()
@@ -53,8 +64,11 @@ def create_cart_item_api_view(request):
                     quantity=quantity,
                     unit_price=product.sale_price,
                 )
+
             return JsonResponse({"status": "success", 'message': 'CartItem created'}, status=201)
 
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -153,21 +167,47 @@ def cart_item_list_api_view(request):
 @login_required
 def update_cart_item_api_view(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        product_uuid = data.get("product_uuid")
-        quantity = int(data.get("quantity", 1))
+        try:
+            data = json.loads(request.body)
+            product_uuid = data.get("product_uuid")
+            quantity = int(data.get("quantity", 0))
+            # Lấy thông tin sản phẩm
+            from product.models import Product
+            product = Product.objects.get(uuid=product_uuid, active=True)
+            # Lấy cart đang hoạt động
+            cart = Cart.objects.filter(account_uuid=request.user.uuid, active=True).first()
+            if not cart:
+                return JsonResponse({'error': 'Cart not found'}, status=404)
 
-        cart = Cart.objects.filter(account_uuid=request.user.uuid, active=True).first()
-        if not cart:
-            return JsonResponse({'error': 'Cart not found'}, status=404)
+            # Lấy cart item
+            cart_item = CartItem.objects.filter(cart_uuid=cart.uuid, product_uuid=product_uuid, active=True).first()
+            if not cart_item:
+                return JsonResponse({'error': 'Hết hàng'}, status=404)
 
-        cart_item = CartItem.objects.filter(cart_uuid=cart.uuid, product_uuid=product_uuid, active=True).first()
-        if not cart_item:
-            return JsonResponse({'error': 'Item not found'}, status=404)
+            # Nếu quantity <= 0 thì xóa khỏi giỏ hàng
+            if quantity <= 0 or product.stock_quantity==0:
+                cart_item.delete()
+                return JsonResponse({'status': 'removed', 'message': 'Đã xóa sản phẩm khỏi giỏ hàng'})
 
-        cart_item.quantity = quantity
-        cart_item.save()
-        return JsonResponse({'status': 'success'})
+            # Kiểm tra tồn kho
+            if quantity > product.stock_quantity:
+                cart_item.quantity = product.stock_quantity
+                cart_item.save()
+                return JsonResponse({
+                    'error': f'Chỉ còn {product.stock_quantity} sản phẩm trong kho.'
+                }, status=400)
+
+            # Cập nhật số lượng
+            cart_item.quantity = quantity
+            cart_item.save()
+            return JsonResponse({'status': 'success'})
+
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @csrf_exempt
