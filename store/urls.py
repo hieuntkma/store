@@ -25,12 +25,14 @@ if django.VERSION >= (4, 0):
     from django.urls import include, re_path
 else:
     from django.conf.urls import include, url as re_path
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('portal.urls', namespace='portal')),
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
 
 for app, urls in APP_LIST.items():
     urlpatterns.append(path(urls, include(f'{app}.urls')))
@@ -41,3 +43,7 @@ for app, urls in APP_LIST.items():
 #     urlpatterns += [
 #         re_path(r'^__debug__/', includes(debug_toolbar.urls)),
 #     ]
+
+if settings.DEBUG is False:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

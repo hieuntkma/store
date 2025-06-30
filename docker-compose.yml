@@ -23,8 +23,10 @@ services:
       - db
     volumes:
       - /static:/app/static 
+      - /media:/app/media
     networks:
       - hnt-network
+    entrypoint: [ "/bin/sh", "-c", "python manage.py collectstatic --noinput" ]
 
 networks:
   hnt-network:
