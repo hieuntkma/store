@@ -688,7 +688,6 @@ def best_seller_products_api_view(request):
         .order_by('-total_quantity')[:limit]
     )
 
-    # Tạo map product_uuid -> total_quantity
     quantity_map = {str(item['product_uuid']): item['total_quantity'] for item in best_sellers}
     product_uuids = list(quantity_map.keys())
 
@@ -705,7 +704,8 @@ def best_seller_products_api_view(request):
             'sale_price': p.sale_price,
             'thumbnail': p.get_thumbnail if hasattr(p, 'get_thumbnail') else '',
             'detail_url': reverse('product:shop_detail', args=[uuid_str]),
-            'sold_quantity': quantity_map.get(uuid_str, 0)
+            'sold_quantity': quantity_map.get(uuid_str, 0),
+            'avg_rating': p.get_feedback_stars()  # GỌI THÊM HÀM TÍNH SAO Ở ĐÂY
         })
     data.sort(key=lambda x: x['sold_quantity'], reverse=True)
 

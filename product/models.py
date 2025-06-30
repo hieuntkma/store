@@ -1,5 +1,7 @@
 from django.db import models
 from uuid import uuid4 as UUID4
+
+from django.db.models import Avg
 from django.utils.timezone import now as djnow
 
 
@@ -101,6 +103,20 @@ class Product(models.Model):
         except Exception as xx:
             print(xx)
             return None
+
+    def get_feedback_stars(self):
+        try:
+            from cart.models import Feedback
+            avg_rating = Feedback.objects.filter(
+                product_uuid=self.uuid,
+                # active=True,
+                rating__isnull=False
+            ).aggregate(avg=Avg('rating'))['avg']
+
+            return round(avg_rating, 1) if avg_rating is not None else 0
+        except Exception as e:
+            print("Lỗi tính feedback:", e)
+            return 0
 
 
 class ProductImage(models.Model):
