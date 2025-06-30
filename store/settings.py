@@ -174,8 +174,8 @@ DATABASES = {
         'NAME': NS_store_DB_NAME,
         'USER': NS_store_DB_USER,
         'PASSWORD': NS_store_DB_PASSWORD,
-        # 'HOST': 'db',
-        'HOST': NS_store_DB_HOST,
+        'HOST': 'db',
+        # 'HOST': NS_store_DB_HOST,
         'PORT': NS_store_DB_PORT,
         'TEST': {
             'NAME': NS_store_DB_TEST_NAME,
