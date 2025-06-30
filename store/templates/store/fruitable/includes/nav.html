@@ -355,12 +355,15 @@
             </div>
 
             <!-- Giỏ hàng -->
-            <div class="position-relative cart-wrapper ">
+            <div class="position-relative me-3 cart-wrapper ">
                 <a href="{% url 'cart:cart_detail_view' %}" class="text-dark position-relative cart-icon">
                     <i class="fas fa-shopping-cart"></i>
-                    <span id="cart-item-count"
+                    {#                    <span id="cart-item-count"#}
+                    {#                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">#}
+                    {#                    </span>#}
+                    <span id="cart-item-count2"
                           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        3
+                        0
                     </span>
                 </a>
                 <div id="cart-preview" class="cart-preview">
@@ -379,6 +382,13 @@
                     </div>
                 </div>
             </div>
+            {% if request.user.is_superuser %}
+                <div class="btn btn-success">
+                    <a href="{% url 'workspace:admin_index_view' %}" class="text-light position-relative cart-icon">
+                        Dashboard
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -498,6 +508,8 @@
 
     {##### ajax list cart preview ####}
     <script>
+        const USER_IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
+
         document.addEventListener("DOMContentLoaded", function () {
             const wrapper = document.querySelector('.cart-wrapper');
             const preview = document.getElementById("cart-preview");
@@ -517,89 +529,98 @@
                 }, 200);
             });
 
-            fetch("{% url 'cart:cart_item_list_api_view' %}")
-                .then(response => response.json())
-                .then(data => {
-                    let html = '';
+            if (USER_IS_AUTHENTICATED) {
+                fetch("{% url 'cart:cart_item_list_api_view' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
 
-                    if (data.status === "success" && data.data.items.length > 0) {
-                        const items = data.data.items.slice(0, 4);
-                        const cart_detail_url = '/cart/';
-                        const totalTypes = data.data.items.length;
-                        countBadge.textContent = totalTypes;
-                        items.forEach(item => {
-                            html += `
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center">
-                                    <a href="#"><img src="${item.thumbnail || '/static/img/placeholder.png'}" width="50" height="50" class="me-3" style="object-fit: cover;" alt=""></a>
-                                    <div>
-                                        <a href="#"><p class="mb-1 fw-bold">${item.name}</p></a>
-                                        <small>${item.unit_price.toLocaleString()}₫ x ${item.quantity}</small>
-                                    </div>
+                        if (data.status === "success" && data.data.items.length > 0) {
+                            const items = data.data.items.slice(0, 4);
+                            const cart_detail_url = '/cart/';
+                            const totalTypes = data.data.items.length;
+                            countBadge.textContent = totalTypes;
+
+                            items.forEach(item => {
+                                html += `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <a href="#"><img src="${item.thumbnail || '/static/img/placeholder.png'}" width="50" height="50" class="me-3" style="object-fit: cover;" alt=""></a>
+                                <div>
+                                    <a href="#"><p class="mb-1 fw-bold">${item.name}</p></a>
+                                    <small>${item.unit_price.toLocaleString()}₫ x ${item.quantity}</small>
                                 </div>
-                                <a href="#" class="text-muted ms-2 remove-cart-item" data-product-uuid="${item.product_uuid}">
-                                    <i class="fas fa-times"></i>
-                                </a>
                             </div>
-                            <hr>
-                        `;
-                        });
-
-                        html += `
-                        <div class="d-flex justify-content-between mb-3">
-                            <strong>Tất cả sản phẩm:</strong>
-                            <span class="text-success fw-bold">${totalTypes}</span>
+                            <a href="#" class="text-muted ms-2 remove-cart-item" data-product-uuid="${item.product_uuid}">
+                                <i class="fas fa-times"></i>
+                            </a>
                         </div>
-                        <a href="${cart_detail_url}" class="btn text-white w-100"
-                           style="background: linear-gradient(to right, #91ad41, #f5966c); border-radius: 30px;">
-                            Xem giỏ hàng
-                        </a>
+                        <hr>
                     `;
-                    } else {
-                        countBadge.textContent = 0;  // 🛑 Nếu không có sản phẩm
-                        html = `<p class="text-muted text-center">Giỏ hàng trống</p>`;
-                    }
+                            });
 
-                    previewCart.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error("Lỗi khi tải cart preview:", error);
-                });
+                            html += `
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Tất cả sản phẩm:</strong>
+                        <span class="text-success fw-bold">${totalTypes}</span>
+                    </div>
+                    <a href="${cart_detail_url}" class="btn text-white w-100"
+                       style="background: linear-gradient(to right, #91ad41, #f5966c); border-radius: 30px;">
+                        Xem giỏ hàng
+                    </a>
+                    `;
+                        } else {
+                            countBadge.textContent = 0;
+                            html = `<p class="text-muted text-center">Giỏ hàng trống</p>`;
+                        }
+
+                        previewCart.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error("Lỗi khi tải cart preview:", error);
+                    });
+            } else {
+                countBadge.textContent = 0;
+                previewCart.innerHTML = `
+            <p class="text-muted text-center mb-2">Bạn chưa đăng nhập</p>
+            <a href="/account/signin/" class="btn btn-primary w-100">Đăng nhập để thêm giỏ hàng</a>
+        `;
+            }
         });
     </script>
 
-<script>
-document.addEventListener('click', function (e) {
-    if (e.target.closest('.remove-cart-item')) {
-        e.preventDefault();
-        const button = e.target.closest('.remove-cart-item');
-        const productUUID = button.dataset.productUuid;
+    <script>
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.remove-cart-item')) {
+                e.preventDefault();
+                const button = e.target.closest('.remove-cart-item');
+                const productUUID = button.dataset.productUuid;
 
-        fetch("/cart/api/remove-cart-item/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}",  // Nếu đang dùng CSRF
-            },
-            body: JSON.stringify({
-                product_uuid: productUUID
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Reload giỏ hàng hoặc gọi lại API hiển thị giỏ
-                window.location.reload(); // hoặc gọi loadCartItems() nếu dùng AJAX
-            } else {
-                alert(data.error || "Không thể xóa sản phẩm.");
+                fetch("/cart/api/remove-cart-item/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",  // Nếu đang dùng CSRF
+                    },
+                    body: JSON.stringify({
+                        product_uuid: productUUID
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Reload giỏ hàng hoặc gọi lại API hiển thị giỏ
+                            window.location.reload(); // hoặc gọi loadCartItems() nếu dùng AJAX
+                        } else {
+                            alert(data.error || "Không thể xóa sản phẩm.");
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Lỗi kết nối. Vui lòng thử lại.");
+                    });
             }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Lỗi kết nối. Vui lòng thử lại.");
         });
-    }
-});
-</script>
+    </script>
 
 {% endblock %}

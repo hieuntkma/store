@@ -40,48 +40,7 @@
                     </tr>
                     </thead>
                     <tbody id="cart-table-body">
-                    {#                    {% for item in cart_items %}#}
-                    {#                        <tr>#}
-                    {#                            <th scope="row">#}
-                    {#                                <div class="d-flex align-items-center">#}
-                    {#                                    <img src="{% static item.image %}" class="img-fluid me-5 rounded-circle"#}
-                    {#                                         style="width: 80px; height: 80px;" alt="{{ item.name }}">#}
-                    {#                                </div>#}
-                    {#                            </th>#}
-                    {#                            <td>#}
-                    {#                                <p class="mb-0 mt-4">{{ item.name }}</p>#}
-                    {#                            </td>#}
-                    {#                            <td>#}
-                    {#                                <p class="mb-0 mt-4">{{ item.unit_price|intcomma }} ₫</p>#}
-                    {#                            </td>#}
-                    {#                            <td>#}
-                    {#                                <div class="input-group quantity mt-4" style="width: 100px;">#}
-                    {#                                    <div class="input-group-btn">#}
-                    {#                                        <button class="btn btn-sm btn-minus rounded-circle bg-light border"><i#}
-                    {#                                                class="fa fa-minus"></i></button>#}
-                    {#                                    </div>#}
-                    {#                                    <input type="text" class="form-control form-control-sm text-center border-0"#}
-                    {#                                           value="{{ item.quantity }}">#}
-                    {#                                    <div class="input-group-btn">#}
-                    {#                                        <button class="btn btn-sm btn-plus rounded-circle bg-light border"><i#}
-                    {#                                                class="fa fa-plus"></i></button>#}
-                    {#                                    </div>#}
-                    {#                                </div>#}
-                    {#                            </td>#}
-                    {#                            <td>#}
-                    {#                                <p class="mb-0 mt-4">{{ item.get_total_item_price|intcomma }}#}
-                    {#                                    ₫</p>#}
-                    {#                            </td>#}
-                    {#                            <td>#}
-                    {#                                <button class="btn btn-md rounded-circle bg-light border mt-4"><i#}
-                    {#                                        class="fa fa-times text-danger"></i></button>#}
-                    {#                            </td>#}
-                    {#                        </tr>#}
-                    {#                    {% empty %}#}
-                    {#                        <tr>#}
-                    {#                            <td colspan="6" class="text-center">Giỏ hàng của bạn đang trống.</td>#}
-                    {#                        </tr>#}
-                    {#                    {% endfor %}#}
+
                     </tbody>
 
                 </table>
@@ -149,9 +108,34 @@
                     quantity: quantity
                 })
             })
-                .then(response => response.json())
-                .then(() => location.reload())
-                .catch(error => console.error("Cập nhật giỏ hàng lỗi:", error));
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cập nhật thất bại',
+                            text: data.error || "Không thể cập nhật giỏ hàng.",
+                            confirmButtonText: 'Đóng'
+                        }).then(() => {
+                            location.reload();  // Reload sau khi bấm OK
+                        });
+                        return;
+                    }
+
+                    // ✅ Nếu thành công → reload
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("❌ Lỗi cập nhật:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi máy chủ',
+                        text: 'Đã xảy ra lỗi khi cập nhật giỏ hàng.',
+                        confirmButtonText: 'Đóng'
+                    }).then(() => {
+                        location.reload();  // Reload sau khi bấm OK
+                    });
+                });
         }
 
         function removeCartItem(productUUID) {
@@ -320,16 +304,9 @@
                 });
             });
 
-            const accountUUID = "{{ request.user.uuid }}";  // Custom user phải có uuid
-            {#console.log(cartItems)#}
-            // Gọi tuần tự từng update (có thể dùng Promise.all nếu muốn đồng loạt)
-            const updatePromises = cartItems.map(item => {
-                console.log("📦 Dữ liệu gửi:", {
-                    account_uuid: accountUUID,
-                    product_uuid: item.product_uuid,
-                    quantity: item.quantity
-                });
+            const accountUUID = "{{ request.user.uuid }}";
 
+            const updatePromises = cartItems.map(item => {
                 return fetch("{% url 'cart:update_cart_item_api_view' %}", {
                     method: "POST",
                     headers: {
@@ -357,16 +334,19 @@
                 });
             });
 
-            // Sau khi tất cả update xong → chuyển sang trang đặt hàng
-            Promise.all(updatePromises)
+            Promise.allSettled(updatePromises)
                 .then(results => {
-                    console.log("✅ Kết quả cập nhật:", results);
-
-                    // Chỉ lọc những phần tử có `error` và không phải undefined/null
-                    const failed = results.find(r => r && r.error);
+                    const failed = results.find(r => r.status === "rejected");
 
                     if (failed) {
-                        alert("❌ Có lỗi khi cập nhật giỏ hàng: " + failed.error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi cập nhật giỏ hàng',
+                            text: failed.reason.message || "Có lỗi xảy ra.",
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();  // Reload sau khi báo lỗi
+                        });
                         return;
                     }
 
@@ -374,8 +354,14 @@
                     window.location.href = "{% url 'order:create_order_view' %}";
                 })
                 .catch(err => {
-                    console.error("❌ Lỗi cập nhật giỏ hàng:", err.message || err);
-                    alert("Không thể cập nhật giỏ hàng: " + (err.message || "Đã xảy ra lỗi"));
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi máy chủ',
+                        text: err.message || "Không thể cập nhật giỏ hàng.",
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
                 });
         });
     </script>

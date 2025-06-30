@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-hlpl(tt6ph+!$4^=1phb3)2b-fd97q()5q=5#mwii*!mr^*3h3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -174,8 +174,8 @@ DATABASES = {
         'NAME': NS_store_DB_NAME,
         'USER': NS_store_DB_USER,
         'PASSWORD': NS_store_DB_PASSWORD,
-        'HOST': 'db',
-        # 'HOST': NS_store_DB_HOST,
+        # 'HOST': 'db',
+        'HOST': NS_store_DB_HOST,
         'PORT': NS_store_DB_PORT,
         'TEST': {
             'NAME': NS_store_DB_TEST_NAME,
