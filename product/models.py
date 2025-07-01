@@ -80,10 +80,11 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
     def get_categories(self):
+        from product.models import Categories  # hoặc wherever it's defined
         try:
-            categories = Categories.objects.filter(uuid=self.categories_uuid, active=True).first()
-            return categories.name
-        except Categories.DoesNotExist:
+            category = Categories.objects.filter(uuid=self.categories_uuid).first()
+            return category.name if category else None
+        except:
             return None
 
     @property

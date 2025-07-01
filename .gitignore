@@ -184,3 +184,4 @@ cython_debug/
 hnt_setttings.py
 #!store/static/store/fruitable/assets/lib/**
 .env
+media/
