@@ -1,14 +1,9 @@
-name: CI/CD Deploy to Server 2.0
+name: CI/CD Deploy to Server
 on:
   push:
     branches:
       - develop
       - production
-#    paths:
-#      - 'src/**'
-#      - 'Dockerfile'
-#      - 'docker-compose.yml'
-#      - 'requirements.txt'
 
 jobs:
   test:
@@ -28,7 +23,7 @@ jobs:
         run: |
           python manage.py test
 
-  build-and-push:
+  build-and-push-image:
     needs: test
     runs-on: ubuntu-latest
     steps:

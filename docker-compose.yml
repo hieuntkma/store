@@ -4,7 +4,7 @@ services:
     image: postgres:latest
     container_name: hnt-db
     env_file:
-      - .env
+      - ./env
     ports:
       - "5433:5432"
     volumes:
@@ -26,8 +26,8 @@ services:
       - /media:/app/media
     networks:
       - hnt-network
-#    entrypoint: [ "/bin/sh", "-c", "python manage.py collectstatic --noinput" ]
 
 networks:
   hnt-network:
     driver: bridge
+

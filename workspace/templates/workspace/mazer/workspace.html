@@ -67,7 +67,7 @@
                                     </div>
                                     <div class="col-md-8">
                                         <h6 class="text-muted font-semibold">Doanh Thu</h6>
-                                        <h6 class="font-extrabold mb-0">{{ revenue|intcomma }}</h6>
+                                        <h6 class="font-extrabold mb-0" id="revenue" data-revenue="{{ revenue }}"></h6>
                                     </div>
                                 </div>
                             </div>
@@ -229,6 +229,20 @@
                 .catch(err => {
                     console.error('Lỗi khi tải sản phẩm bán chạy:', err);
                 });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const revenueEl = document.getElementById("revenue");
+            if (revenueEl) {
+                const rawRevenue = revenueEl.dataset.revenue || "0";
+                const revenue = parseInt(rawRevenue, 10) || 0;
+
+                const formatted = new Intl.NumberFormat('vi-VN').format(revenue) + '₫';
+                revenueEl.textContent = formatted;
+            } else {
+                console.warn("Không tìm thấy phần tử #revenue");
+            }
         });
     </script>
 {% endblock %}
