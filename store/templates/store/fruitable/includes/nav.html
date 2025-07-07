@@ -284,25 +284,24 @@
                     </li>
                     <!-- SẢN PHẨM với submenu -->
                     <li class="nav-item border-bottom py-2">
-  <a class="nav-link text-white d-flex justify-content-between align-items-center"
-     href="{% url 'product:shop' %}">
-    Sản phẩm
-    <i class="fas fa-angle-down text-white" id="productIconToggle" style="cursor: pointer;"></i>
-  </a>
-  <ul class="submenu list-unstyled mt-2 ms-3"
-      id="productSubmenu"
-      style="display: none; background-color: #58682a; border-radius: 5px;">
-  </ul>
-</li>
+                        <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                           href="{% url 'product:shop' %}">
+                            Sản phẩm
+                            <i class="fas fa-angle-down text-white" id="productIconToggle" style="cursor: pointer;"></i>
+                        </a>
+                        <ul class="submenu list-unstyled mt-2 ms-3"
+                            id="productSubmenu"
+                            style="display: none; background-color: #58682a; border-radius: 5px;">
+                        </ul>
+                    </li>
                     <li class="nav-item border-bottom py-2"><a class="nav-link text-white"
                                                                href="{% url 'portal:contact_us_view' %}">LIÊN HỆ</a>
                     </li>
-                    {% if request.user.is_superuser	%}
-
+                    {% if request.user.is_superuser %}
+                        <li class="nav-item border-bottom py-2"><a class="nav-link text-white"
+                                                                   href="{% url 'workspace:admin_index_view' %}">DASHBOARD</a>
+                        </li>
                     {% endif %}
-                    <li class="nav-item border-bottom py-2"><a class="nav-link text-white"
-                                                               href="{% url 'workspace:admin_index_view' %}">DASHBOARD</a>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -325,6 +324,11 @@
             </li>
             <li class="nav-item"><a class="nav-link text-dark" href="{% url 'portal:contact_us_view' %}">Liên hệ</a>
             </li>
+            {% if request.user.is_superuser %}
+                <li class="nav-item"><a class="nav-link text-dark"
+                                        href="{% url 'workspace:admin_index_view' %}">Dashboard</a>
+                </li>
+            {% endif %}
         </ul>
 
         <!-- Icon bên phải -->
@@ -390,13 +394,13 @@
                     </div>
                 </div>
             </div>
-            {% if request.user.is_superuser %}
-                <div class="btn btn-success">
-                    <a href="{% url 'workspace:admin_index_view' %}" class="text-light position-relative cart-icon">
-                        Dashboard
-                    </a>
-                </div>
-            {% endif %}
+{#            {% if request.user.is_superuser %}#}
+{#                <div class="btn btn-success">#}
+{#                    <a href="{% url 'workspace:admin_index_view' %}" class="text-light position-relative cart-icon">#}
+{#                        Dashboard chưa thay đổi#}
+{#                    </a>#}
+{#                </div>#}
+{#            {% endif %}#}
         </div>
     </div>
 </div>
@@ -630,51 +634,51 @@
             }
         });
     </script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const iconToggle = document.getElementById("productIconToggle");
-    const submenu = document.getElementById("productSubmenu");
-    const productShopUrl = "{% url 'product:shop' %}";
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const iconToggle = document.getElementById("productIconToggle");
+            const submenu = document.getElementById("productSubmenu");
+            const productShopUrl = "{% url 'product:shop' %}";
 
-    let categoriesLoaded = false;
+            let categoriesLoaded = false;
 
-    iconToggle.addEventListener("click", function (event) {
-      event.preventDefault();  // ngăn click icon điều hướng theo <a>
+            iconToggle.addEventListener("click", function (event) {
+                event.preventDefault();  // ngăn click icon điều hướng theo <a>
 
-      if (submenu.style.display === "none" || submenu.style.display === "") {
-        submenu.style.display = "block";
+                if (submenu.style.display === "none" || submenu.style.display === "") {
+                    submenu.style.display = "block";
 
-        // Load category nếu chưa load
-        if (!categoriesLoaded) {
-          fetch("/product/api/categories/user/")
-            .then(response => {
-              if (!response.ok) throw new Error("API lỗi");
-              return response.json();
-            })
-            .then(data => {
-              submenu.innerHTML = "";
-              data.forEach(item => {
-                const li = document.createElement("li");
-                li.innerHTML = `<a class="nav-link text-white" href="${productShopUrl}?category=${encodeURIComponent(item.name)}">${item.name}</a>`;
-                submenu.appendChild(li);
-              });
-              categoriesLoaded = true;
-            })
-            .catch(error => {
-              console.error("Lỗi API:", error);
+                    // Load category nếu chưa load
+                    if (!categoriesLoaded) {
+                        fetch("/product/api/categories/user/")
+                            .then(response => {
+                                if (!response.ok) throw new Error("API lỗi");
+                                return response.json();
+                            })
+                            .then(data => {
+                                submenu.innerHTML = "";
+                                data.forEach(item => {
+                                    const li = document.createElement("li");
+                                    li.innerHTML = `<a class="nav-link text-white" href="${productShopUrl}?category=${encodeURIComponent(item.name)}">${item.name}</a>`;
+                                    submenu.appendChild(li);
+                                });
+                                categoriesLoaded = true;
+                            })
+                            .catch(error => {
+                                console.error("Lỗi API:", error);
+                            });
+                    }
+
+                    // Đổi icon xuống thành lên
+                    iconToggle.classList.remove("fa-angle-down");
+                    iconToggle.classList.add("fa-angle-up");
+
+                } else {
+                    submenu.style.display = "none";
+                    iconToggle.classList.remove("fa-angle-up");
+                    iconToggle.classList.add("fa-angle-down");
+                }
             });
-        }
-
-        // Đổi icon xuống thành lên
-        iconToggle.classList.remove("fa-angle-down");
-        iconToggle.classList.add("fa-angle-up");
-
-      } else {
-        submenu.style.display = "none";
-        iconToggle.classList.remove("fa-angle-up");
-        iconToggle.classList.add("fa-angle-down");
-      }
-    });
-  });
-</script>
+        });
+    </script>
 {% endblock %}
