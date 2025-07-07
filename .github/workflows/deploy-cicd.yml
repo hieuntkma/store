@@ -89,7 +89,7 @@ jobs:
             docker builder prune --filter "until=24h" -f
             
             echo "📦 Chạy collectstatic trước khi chạy container..."
-            docker compose run --rm collectstatic
+            docker compose run --rm web python manage.py collectstatic --noinput
             
             echo "🚀 Khởi động dịch vụ..."
             if ! docker compose pull; then
