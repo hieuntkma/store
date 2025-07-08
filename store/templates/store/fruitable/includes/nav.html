@@ -324,11 +324,11 @@
             </li>
             <li class="nav-item"><a class="nav-link text-dark" href="{% url 'portal:contact_us_view' %}">Liên hệ</a>
             </li>
-            {% if request.user.is_superuser %}
-                <li class="nav-item"><a class="nav-link text-dark"
-                                        href="{% url 'workspace:admin_index_view' %}">Dashboard</a>
-                </li>
-            {% endif %}
+{#            {% if request.user.is_superuser %}#}
+{#                <li class="nav-item"><a class="nav-link text-dark"#}
+{#                                        href="{% url 'workspace:admin_index_view' %}">Dashboard</a>#}
+{#                </li>#}
+{#            {% endif %}#}
         </ul>
 
         <!-- Icon bên phải -->
