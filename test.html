@@ -1,0 +1,266 @@
+{% extends "store/mazer/admin_base.html" %} {% load static %} {% load tz %} {%
+load l10n %} {% load i18n %} {% load humanize %} {% get_current_language as
+LANGUAGE_CODE %} {% get_media_prefix as MEDIA_URL %} {% block breadscrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      {{ breadscrumb }}
+    </li>
+  </ol>
+</nav>
+{% endblock breadscrumb %} {% block content %}
+<div class="page-content">
+  <section class="row">
+    <div class="col-12 col-lg-9">
+      <div class="row">
+        <div class="col-6 col-lg-3 col-md-6">
+          <div class="card">
+            <div class="card-body px-3 py-4-5">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="stats-icon purple">
+                    <i class="iconly-boldBuy"></i>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <h6 class="text-muted font-semibold">Sản phẩm</h6>
+                  <h6 class="font-extrabold mb-0">{{ products }}</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3 col-md-6">
+          <div class="card">
+            <div class="card-body px-3 py-4-5">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="stats-icon green">
+                    <i class="iconly-boldDocument"></i>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <h6 class="text-muted font-semibold">Đơn hàng</h6>
+                  <h6 class="font-extrabold mb-0">{{ orders }}</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3 col-md-6">
+          <div class="card">
+            <div class="card-body px-3 py-4-5">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="stats-icon red">
+                    <i class="iconly-boldWallet"></i>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <h6 class="text-muted font-semibold">Doanh Thu</h6>
+                  <h6
+                    class="font-extrabold mb-0"
+                    id="revenue"
+                    data-revenue="{{ revenue }}"
+                  ></h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3 col-md-6">
+          <div class="card">
+            <div class="card-body px-3 py-4-5">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="stats-icon blue">
+                    <i class="iconly-boldProfile"></i>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <h6 class="text-muted font-semibold">Người dùng</h6>
+                  <h6 class="font-extrabold mb-0">{{ accounts }}</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h4>Sản phẩm đã bán</h4>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="filter-type" class="form-label">Xem theo:</label>
+                <select
+                  id="filter-type"
+                  class="form-select w-auto d-inline-block"
+                >
+                  <option value="day">Ngày</option>
+                  <option value="month">Tháng</option>
+                  <option value="year">Năm</option>
+                </select>
+              </div>
+              <div id="chart-stats"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-3">
+      <div class="card">
+        <div class="card-body py-4 px-5">
+          <div class="d-flex align-items-center">
+            <div class="avatar avatar-xl">
+              <img src="{{ profile_avt }}" alt="Avatar" />
+            </div>
+            <div class="ms-3 name">
+              <h5 class="font-bold">{{ profile_fullname }}</h5>
+              <h6 class="text-muted mb-0">@{{ profile_username }}</h6>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h4>Sản phẩm bán chạy</h4>
+        </div>
+        <div class="card-content pb-4" id="best_selling_list">
+          <!-- Nội dung sẽ được AJAX thêm vào đây -->
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %} {% block extra_scripts %} {#
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+#}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const filterSelect = document.getElementById("filter-type");
+
+    function loadChart(filterType = "day") {
+      fetch(`/order/api/v1/orders/admin/stats?type=${filterType}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const options = {
+            chart: {
+              type: "bar",
+              height: 350,
+            },
+            series: [
+              {
+                name: "Số đơn hàng",
+                data: data.values,
+              },
+            ],
+            xaxis: {
+              categories: data.labels,
+              title: {
+                text:
+                  filterType === "year"
+                    ? "Năm"
+                    : filterType === "month"
+                    ? "Tháng"
+                    : "Ngày",
+              },
+            },
+            yaxis: {
+              title: { text: "Số lượng đơn hàng" },
+            },
+            plotOptions: {
+              bar: {
+                borderRadius: 4,
+                columnWidth: "50%",
+              },
+            },
+            dataLabels: {
+              enabled: true,
+            },
+            colors: ["#3ec82e"],
+          };
+
+          // Xóa biểu đồ cũ nếu có
+          if (window.orderChart) {
+            window.orderChart.destroy();
+          }
+
+          window.orderChart = new ApexCharts(
+            document.querySelector("#chart-stats"),
+            options
+          );
+          window.orderChart.render();
+        });
+    }
+
+    loadChart("day");
+
+    filterSelect.addEventListener("change", function () {
+      loadChart(this.value);
+    });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/product/api/best-seller-products/?limit=5") // Có thể đổi limit tại đây
+      .then((res) => res.json())
+      .then((response) => {
+        const list = response.data;
+        const container = document.querySelector("#best_selling_list");
+        container.innerHTML = "";
+
+        list.forEach((product) => {
+          const item = `
+                    <div class="recent-message d-flex px-4 py-3">
+                        <div class="avatar avatar-lg">
+                            <img src="${
+                              product.thumbnail ||
+                              "/static/store/mazer/assets/images/default.png"
+                            }" alt="${product.name}">
+                        </div>
+                        <div class="name ms-4">
+                            <h5 class="mb-1">
+                                <a href="${
+                                  product.detail_url
+                                }" class="text-dark text-decoration-none">
+                                    ${product.name}
+                                </a>
+                            </h5>
+                            <h6 class="text-muted mb-0">
+                                Đã bán: ${product.sold_quantity}
+                            </h6>
+                        </div>
+                    </div>
+                `;
+          container.innerHTML += item;
+        });
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải sản phẩm bán chạy:", err);
+      });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const revenueEl = document.getElementById("revenue");
+    if (revenueEl) {
+      const rawRevenue = revenueEl.dataset.revenue || "0";
+      const revenue = parseInt(rawRevenue, 10) || 0;
+
+      const formatted = new Intl.NumberFormat("vi-VN").format(revenue) + "₫";
+      revenueEl.textContent = formatted;
+    } else {
+      console.warn("Không tìm thấy phần tử #revenue");
+    }
+  });
+</script>
+{% endblock extra_scripts %}

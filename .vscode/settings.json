@@ -1,0 +1,33 @@
+{
+  //cấu hình tự động kích hoạt môi trường ảo
+  "python.defaultInterpreterPath": "D:\\KMA\\store\\.venv\\Scripts\\.venv\\Scripts\\python.exe",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "& { . 'D:\\KMA\\store\\.venv\\Scripts\\Activate.ps1' }"
+      ]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "python.terminal.activateEnvironment": true,
+  //cấu hình lựa chọn định dạng html file
+  "files.associations": {
+    "**/templates/**/*.html": "django-html",
+    "*.html": "html"
+  },
+  "emmet.includeLanguages": {
+    "django-html": "html"
+  },
+  // Mặc định dùng Prettier
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Riêng django-html dùng Djlint
+  "[django-html]": {
+    "editor.defaultFormatter": "monosans.djlint"
+  },
+}

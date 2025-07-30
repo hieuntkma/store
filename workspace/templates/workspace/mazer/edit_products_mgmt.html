@@ -4,17 +4,19 @@
 {% load l10n %}
 {% load i18n %}
 {% load humanize %}
-
 {% block breadscrumb %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa sản phẩm</li>
         </ol>
     </nav>
 {% endblock %}
-
 {% block content %}
     <section id="edit-product" class="section">
         <div class="row">
@@ -28,47 +30,69 @@
                             {% csrf_token %}
                             <div class="form-group mb-3">
                                 <label for="product_name">Tên sản phẩm</label>
-                                <input type="text" id="product_name" class="form-control" value="{{ product.product_name }}" required>
+                                <input type="text"
+                                       id="product_name"
+                                       class="form-control"
+                                       value="{{ product.product_name }}"
+                                       required>
                             </div>
-
                             <div class="form-group mb-3">
                                 <label for="categories">Danh mục</label>
                                 <select id="categories" class="form-control" required>
                                     <option value="">-- Chọn danh mục --</option>
                                     {% for cat in cats %}
-                                        <option value="{{ cat.uuid }}" {% if cat.uuid == product.categories_uuid %}selected{% endif %}>{{ cat.name }}</option>
+                                        <option value="{{ cat.uuid }}"
+                                                {% if cat.uuid == product.categories_uuid %}selected{% endif %}>
+                                            {{ cat.name }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                             </div>
-
                             <div class="form-group mb-3">
                                 <label for="price">Giá</label>
-                                <input type="text" id="price" class="form-control" value="{{ product.price|floatformat:0|default:'0' }}" required>
-                                <input type="hidden" id="price_raw" name="price" value="{{ product.price|floatformat:0|default:'0' }}">
+                                <input type="text"
+                                       id="price"
+                                       class="form-control"
+                                       value="{{ product.price|floatformat:0|default:'0' }}"
+                                       required>
+                                <input type="hidden"
+                                       id="price_raw"
+                                       name="price"
+                                       value="{{ product.price|floatformat:0|default:'0' }}">
                             </div>
-
                             <div class="form-group mb-3">
                                 <label for="sale_price">Giá khuyến mãi</label>
-                                <input type="text" id="sale_price" class="form-control" value="{{ product.sale_price|floatformat:0|default:'' }}">
-                                <input type="hidden" id="sale_price_raw" name="sale_price" value="{{ product.sale_price|floatformat:0|default:'' }}">
+                                <input type="text"
+                                       id="sale_price"
+                                       class="form-control"
+                                       value="{{ product.sale_price|floatformat:0|default:'' }}">
+                                <input type="hidden"
+                                       id="sale_price_raw"
+                                       name="sale_price"
+                                       value="{{ product.sale_price|floatformat:0|default:'' }}">
                             </div>
-
                             <div class="form-group mb-3">
                                 <label for="stock_quantity">Số lượng tồn kho</label>
-                                <input type="number" id="stock_quantity" class="form-control" value="{{ product.stock_quantity }}" min="0" required>
+                                <input type="number"
+                                       id="stock_quantity"
+                                       class="form-control"
+                                       value="{{ product.stock_quantity }}"
+                                       min="0"
+                                       required>
                             </div>
-
                             <div class="form-group mb-3">
                                 <label for="desc">Mô tả</label>
                                 <textarea id="desc" class="form-control" rows="10" style="height: 300px;">{{ product.desc|default:'' }}</textarea>
                             </div>
-
                             <div class="form-group mb-3">
                                 <label>
-                                    <input type="checkbox" id="is_visible" name="is_visible" {% if product.active %}checked{% endif %}> Hiển thị lên sàn
+                                    <input type="checkbox"
+                                           id="is_visible"
+                                           name="is_visible"
+                                           {% if product.active %}checked{% endif %}>
+                                    Hiển thị lên sàn
                                 </label>
                             </div>
-
                             <button type="submit" class="btn btn-primary w-100">Cập nhật sản phẩm</button>
                         </form>
                     </div>
@@ -80,32 +104,63 @@
                         <h4 class="card-title">Ảnh sản phẩm</h4>
                     </div>
                     <div class="card-body d-flex flex-column align-items-center">
-                        <div id="dropzone-area" class="border rounded text-center p-4" style="border-style: dashed; width: 100%;">
+                        <div id="dropzone-area"
+                             class="border rounded text-center p-4"
+                             style="border-style: dashed;
+                                    width: 100%">
                             <i class="bi bi-image" style="font-size: 2rem;"></i>
-                            <p>Thả ảnh sản phẩm ở đây hoặc <a href="#" onclick="document.getElementById('images').click(); return false;">Duyệt</a></p>
-                            <input type="file" id="images" name="images" multiple hidden accept="image/*">
+                            <p>
+                                Thả ảnh sản phẩm ở đây hoặc <a href="#"
+    onclick="document.getElementById('images').click(); return false;">Duyệt</a>
+                            </p>
+                            <input type="file"
+                                   id="images"
+                                   name="images"
+                                   multiple
+                                   hidden
+                                   accept="image/*">
                             <div id="image-preview-list" class="mt-3">
                                 {% for image in product.get_image %}
-                                    <div class="d-flex align-items-center justify-content-center mb-2" data-image-uuid="{{ image.uuid }}">
-                                        <img src="{{ image.image.url|default:'/static/images/no-image.png' }}" class="img-thumbnail me-2" style="width: 80px; height: 80px; object-fit: cover;">
+                                    <div class="d-flex align-items-center justify-content-center mb-2"
+                                         data-image-uuid="{{ image.uuid }}">
+                                        <img src="{{ image.image.url|default:'/static/images/no-image.png' }}"
+                                             class="img-thumbnail me-2"
+                                             style="width: 80px;
+                                                    height: 80px;
+                                                    object-fit: cover">
                                         <span class="me-2">{{ image.name }} ({{ image.image.size|filesizeformat }})</span>
-                                        <button class="btn btn-sm btn-danger delete-image" data-image-uuid="{{ image.uuid }}"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-danger delete-image"
+                                                data-image-uuid="{{ image.uuid }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </div>
                                 {% empty %}
                                     <p>Chưa có ảnh sản phẩm.</p>
                                 {% endfor %}
                             </div>
                         </div>
-                        <div id="thumbnail-dropzone" class="border rounded text-center p-2 mt-3" style="border-style: dashed; width: 100%;">
+                        <div id="thumbnail-dropzone"
+                             class="border rounded text-center p-2 mt-3"
+                             style="border-style: dashed;
+                                    width: 100%">
                             <i class="bi bi-image" style="font-size: 1.5rem;"></i>
-                            <p>Thả ảnh thumbnail ở đây hoặc <a href="#" onclick="document.getElementById('thumbnail').click(); return false;">Duyệt</a></p>
+                            <p>
+                                Thả ảnh thumbnail ở đây hoặc <a href="#"
+    onclick="document.getElementById('thumbnail').click(); return false;">Duyệt</a>
+                            </p>
                             <input type="file" id="thumbnail" name="thumbnail" hidden accept="image/*">
                             <div id="thumbnail-preview" class="mt-2 d-flex justify-content-center">
                                 {% if product.get_thumbnail %}
                                     <div class="d-flex align-items-center mb-2">
-                                        <img src="{{ product.get_thumbnail|default:'/static/images/no-image.png' }}" class="img-thumbnail me-2" style="width: 80px; height: 80px; object-fit: cover;">
+                                        <img src="{{ product.get_thumbnail|default:'/static/images/no-image.png' }}"
+                                             class="img-thumbnail me-2"
+                                             style="width: 80px;
+                                                    height: 80px;
+                                                    object-fit: cover">
                                         <span>Thumbnail ({{ product.get_thumbnail|filesizeformat }})</span>
-                                        <button class="btn btn-sm btn-danger ms-2 delete-thumbnail"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-danger ms-2 delete-thumbnail">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </div>
                                 {% else %}
                                     <p>Chưa có thumbnail.</p>
@@ -118,7 +173,6 @@
         </div>
     </section>
 {% endblock %}
-
 {% block extra_scripts %}
     <script src="{% static 'store/mazer/assets/vendors/ckeditor/ckeditor.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

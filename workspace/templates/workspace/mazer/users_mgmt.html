@@ -4,48 +4,50 @@
 {% load l10n %}
 {% load i18n %}
 {% load humanize %}
-
 {% block breadscrumb %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'workspace:admin_index_view' %}">Trang chủ</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ breadscrumb_url }}">{{ breadscrumb }}</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Quản lý người dùng</li>
         </ol>
     </nav>
 {% endblock %}
-
 {% block content %}
     <section class="section">
         <div class="card">
-            <div class="card-header">
-                Quản Lý Người Dùng
-            </div>
+            <div class="card-header">Quản Lý Người Dùng</div>
             <div class="card-body">
                 <div>
                     <a href="#" class="btn btn-success" id="create_user_btn">Thêm người dùng</a>
                 </div>
                 <table class="table" id="user_table">
                     <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Vai trò</th>
-                        <th>Ngày tạo</th>
-                        <th>Thao tác</th>
-                    </tr>
+                        <tr>
+                            <th>STT</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
                     </thead>
                     <tbody id="user_table_body">
-
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
-
     <!-- Modal thêm danh mục -->
-    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserLabel" aria-hidden="true">
+    <div class="modal fade"
+         id="createUserModal"
+         tabindex="-1"
+         aria-labelledby="createUserLabel"
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -53,12 +55,26 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" class="form-control mb-2" id="new_username" placeholder="Tên đăng nhập">
-                    <input type="email" class="form-control mb-2" id="new_email" placeholder="Email">
-                    <input type="password" class="form-control mb-2" id="new_password" placeholder="Mật khẩu">
-                    <input type="text" class="form-control mb-2" id="new_first_name" placeholder="Họ">
-                    <input type="text" class="form-control mb-2" id="new_last_name" placeholder="Tên">
-
+                    <input type="text"
+                           class="form-control mb-2"
+                           id="new_username"
+                           placeholder="Tên đăng nhập">
+                    <input type="email"
+                           class="form-control mb-2"
+                           id="new_email"
+                           placeholder="Email">
+                    <input type="password"
+                           class="form-control mb-2"
+                           id="new_password"
+                           placeholder="Mật khẩu">
+                    <input type="text"
+                           class="form-control mb-2"
+                           id="new_first_name"
+                           placeholder="Họ">
+                    <input type="text"
+                           class="form-control mb-2"
+                           id="new_last_name"
+                           placeholder="Tên">
                     <select class="form-select mb-2" id="new_role">
                         <option value="user" selected>Người dùng</option>
                         <option value="admin">Admin</option>
@@ -71,7 +87,11 @@
         </div>
     </div>
     <!-- Modal Sửa danh mục -->
-    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
+    <div class="modal fade"
+         id="editUserModal"
+         tabindex="-1"
+         aria-labelledby="editUserLabel"
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -80,16 +100,21 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit_user_uuid">
-
                     <label for="edit_user_username" class="form-label">Tên người dùng</label>
-                    <input type="text" class="form-control mb-2" id="edit_user_username" placeholder="Tên người dùng">
-
+                    <input type="text"
+                           class="form-control mb-2"
+                           id="edit_user_username"
+                           placeholder="Tên người dùng">
                     <label for="edit_user_email" class="form-label">Email</label>
-                    <input type="email" class="form-control mb-2" id="edit_user_email" placeholder="Email">
-
+                    <input type="email"
+                           class="form-control mb-2"
+                           id="edit_user_email"
+                           placeholder="Email">
                     <label for="edit_user_password" class="form-label">Mật khẩu mới (bỏ trống nếu không đổi)</label>
-                    <input type="password" class="form-control mb-2" id="edit_user_password" placeholder="Mật khẩu mới">
-
+                    <input type="password"
+                           class="form-control mb-2"
+                           id="edit_user_password"
+                           placeholder="Mật khẩu mới">
                     <label for="edit_user_role" class="form-label">Vai trò</label>
                     <select class="form-select" id="edit_user_role">
                         <option value="false">Người dùng</option>
@@ -102,11 +127,8 @@
             </div>
         </div>
     </div>
-
 {% endblock %}
-
 {% block extra_scripts %}
-
     {#    #### create category ####}
     <script>
         // Lấy CSRF token từ cookie

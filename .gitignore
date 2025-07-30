@@ -1,7 +1,7 @@
 .idea/
 *.log
 *.bak
-.vscode
+#.vscode
 .idea
 .git
 # Byte-compiled / optimized / DLL files
