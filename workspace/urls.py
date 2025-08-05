@@ -23,5 +23,6 @@ urlpatterns = [
 
     #### User management ####
     path('mgmt/users/', views.users_management_view, name='users_management_view'),
+    path('mgmt/test-scss/', views.test_scss_view, name='test_scss_view'),
 ]
 

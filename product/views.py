@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from django.template import Template, Context
 from rest_framework import status
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
@@ -54,7 +55,8 @@ def shop_detail_view(request, uuid):
             'uuid': str(product.uuid),
             'name': product.name,
             'product_name': product.product_name,
-            'desc': product.desc,
+            'desc': Template(product.desc).render(Context({})),
+            # 'desc': (product.desc),
             'price': product.price,
             'sale_price': product.sale_price,
             'stock_quantity': product.stock_quantity,

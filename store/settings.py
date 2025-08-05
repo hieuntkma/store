@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from os import environ
+
 # from dotenv import load_dotenv
 # from pathlib import Path
 
@@ -50,10 +51,11 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django.contrib.sites',
     'rest_framework',
+    'compressor',
     # "debug_toolbar",
     # "channels",
     # "law_data_prepare",
-  
+
 ]
 
 MY_APPS = []
@@ -258,6 +260,26 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Django Compressor settings
+COMPRESS_ENABLED = DEBUG  # thường chỉ bật khi dev
+COMPRESS_OFFLINE = not DEBUG  # True nếu bạn muốn build sẵn trong production
+
+COMPRESS_URL = STATIC_URL
+COMPRESS_ROOT = STATIC_ROOT
+
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'django_libsass.SassCompiler'),
+)
+
+LIBSASS_SOURCE_COMMENTS = False
+LIBSASS_OUTPUT_STYLE = 'compressed'
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+    # Quan trọng: dòng này giúp django-compressor tìm được static/scss để nén
+    'compressor.finders.CompressorFinder',
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

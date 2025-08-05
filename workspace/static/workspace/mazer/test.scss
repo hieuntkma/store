@@ -1,0 +1,41 @@
+// File: static/css/user_table.scss
+
+#user_table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  thead {
+    background-color: #f2f2f2;
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #dee2e6;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #ddd;
+
+      &:hover {
+        background-color: #f9f9f9;
+      }
+
+      td {
+        padding: 10px;
+        vertical-align: middle;
+      }
+
+      td:last-child {
+        min-width: 120px;
+      }
+    }
+  }
+}
+
+#user_table_body td .btn {
+  margin-right: 5px;
+}

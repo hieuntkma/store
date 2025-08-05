@@ -112,3 +112,13 @@ def users_management_view(request):
 
     template = loader.get_template(str('workspace/mazer/users_mgmt.html'))
     return HttpResponse(template.render(context, request))
+
+@login_required(login_url='account:signin_view')
+def test_scss_view(request):
+    context = {}
+    context["breadscrumb"] = "Người dùng"
+    context["breadscrumb_url"] = reverse('workspace:users_management_view')
+    users = Account.objects.all()
+
+    template = loader.get_template(str('workspace/mazer/test_scss.html'))
+    return HttpResponse(template.render(context, request))
